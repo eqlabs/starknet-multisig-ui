@@ -50,7 +50,7 @@ const StyledTrigger = styled(Tabs.Trigger, {
 export const ExistingMultisig = ({ contractAddress }: MultisigProps) => {
   const { account } = useStarknet();
   const { contract: multisigContract, status, loading, signers, threshold } = useMultisigContract(
-    contractAddress
+    contractAddress, 20000
   );
   
   const [firstLoad, setFirstLoad] = useState<boolean>(true)
