@@ -1,7 +1,11 @@
 import { InjectedConnector } from "@starknet-react/core";
-import { validateAndParseAddress } from "starknet";
-import { BigNumberish, toBN } from "starknet/utils/number";
-import { ComparisonRange, TransactionStatus } from "~/types";
+import { Contract, validateAndParseAddress } from "starknet";
+import { BigNumberish, toBN, toHex } from "starknet/utils/number";
+import {
+  ComparisonRange,
+  MultisigTransaction,
+  TransactionStatus,
+} from "~/types";
 import { voyagerBaseUrl } from "./config";
 
 export const shortStringFeltToStr = (felt: bigint): string => {
@@ -80,7 +84,8 @@ export const formatAmount = (
       acc >= right.length ? right : right.substring(0, acc),
     ].join("");
   } else {
-    formatted = amount;
+    console.log("OH FUG :--D", decimalIndex, bnStr, amount);
+    formatted = amount.toString();
   }
 
   return formatted;
@@ -133,4 +138,43 @@ export const getVoyagerTransactionLink = (txHash: string): string => {
 
 export const getVoyagerContractLink = (contractAddress: string): string => {
   return voyagerBaseUrl + "contract/" + contractAddress;
+};
+
+export const getMultisigTransactionInfo = async (
+  contract: Contract,
+  currentTransactionIndex: number
+) => {
+  const { tx: transaction, tx_calldata: calldata } =
+    await contract.get_transaction(currentTransactionIndex);
+
+  const formattedTransaction: MultisigTransaction = {
+    nonce: currentTransactionIndex,
+    to: toHex(transaction.to),
+    function_selector: mapTargetHashToText(
+      transaction.function_selector.toString()
+    ),
+    calldata: calldata.toString().split(","),
+    calldata_len: transaction.calldata_len.toNumber(),
+    executed: transaction.executed.toNumber() === 1,
+    threshold: transaction.threshold.toNumber(),
+  };
+
+  return formattedTransaction;
+};
+
+export const parseMultisigTransaction = (
+  rawMultisigTransaction: any
+): MultisigTransaction => {
+  const parsedTransaction: MultisigTransaction = {
+    nonce: rawMultisigTransaction.nonce.toNumber(),
+    to: rawMultisigTransaction.targetAddress,
+    function_selector: rawMultisigTransaction.targetFunctionSelector,
+    calldata: rawMultisigTransaction.callData.map((data: any) =>
+      typeof data === "string" ? toBN(data) : toBN(data.toString())
+    ),
+    calldata_len: rawMultisigTransaction.callData.length,
+    executed: rawMultisigTransaction.executed,
+    threshold: rawMultisigTransaction.threshold,
+  };
+  return parsedTransaction;
 };
