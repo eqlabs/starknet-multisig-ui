@@ -6,7 +6,7 @@ import { bnToUint256, Uint256, uint256ToBN } from "starknet/dist/utils/uint256";
 import { BigNumberish, toBN } from "starknet/utils/number";
 import { addMultisigTransaction } from "~/state/utils";
 import { MultisigTransaction } from "~/types";
-import { filterNonFeltChars, formatAmount, parseAmount, shortStringFeltToStr } from "~/utils";
+import { filterNonFeltChars, formatAmount, parseAmount, parseMultisigTransaction, shortStringFeltToStr } from "~/utils";
 import Source from "../../public/erc20.json";
 import Button from "./Button";
 import { Field, Fieldset, Label } from "./Forms";
@@ -28,19 +28,18 @@ const Erc20Transaction = ({multisigContract}: {multisigContract?: Contract}) => 
       const { res: nonce } = await multisigContract?.get_transactions_len();
       const response = await multisigContract?.submit_transaction(targetAddress, targetFunctionSelector, callData, nonce);
 
-      const parsedTransaction: MultisigTransaction = {
-        nonce: nonce,
-        to: targetAddress,
-        function_selector: targetFunctionSelector,
-        calldata: callData.map(toString),
-        calldata_len: callData.length,
+      const parsedTransaction: MultisigTransaction = parseMultisigTransaction({
+        nonce,
+        targetAddress,
+        targetFunctionSelector,
+        callData,
         executed: false,
         threshold: 0,
-      };
+      });
 
-      console.log(parsedTransaction)
+      console.log(parsedTransaction, response)
 
-      addMultisigTransaction(multisigContract.address, parsedTransaction, { hash: response.transaction_hash, status: response.code })
+      addMultisigTransaction(multisigContract.address, parsedTransaction, { hash: response.transaction_hash, status: response.code });
     }
   };
   

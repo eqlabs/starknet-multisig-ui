@@ -1,6 +1,6 @@
 import { InjectedConnector } from "@starknet-react/core";
 import { Contract, validateAndParseAddress } from "starknet";
-import { BigNumberish, toBN, toHex } from "starknet/utils/number";
+import { BigNumberish, isHex, toBN, toHex } from "starknet/utils/number";
 import {
   ComparisonRange,
   MultisigTransaction,
@@ -168,7 +168,11 @@ export const parseMultisigTransaction = (
   const parsedTransaction: MultisigTransaction = {
     nonce: rawMultisigTransaction.nonce.toNumber(),
     to: rawMultisigTransaction.targetAddress,
-    function_selector: rawMultisigTransaction.targetFunctionSelector,
+    function_selector: mapTargetHashToText(
+      isHex(rawMultisigTransaction.targetFunctionSelector)
+        ? toBN(rawMultisigTransaction.targetFunctionSelector)
+        : rawMultisigTransaction.targetFunctionSelector.toString()
+    ),
     calldata: rawMultisigTransaction.callData.map((data: any) =>
       typeof data === "string" ? toBN(data) : toBN(data.toString())
     ),

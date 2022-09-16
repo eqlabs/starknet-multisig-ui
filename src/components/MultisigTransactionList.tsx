@@ -1,10 +1,12 @@
+import { useStarknet } from "@starknet-react/core";
 import { styled } from "@stitches/react";
 import { useEffect } from "react";
 import { Contract } from "starknet";
 import { uint256ToBN } from "starknet/dist/utils/uint256";
 import { toBN, toHex } from "starknet/utils/number";
-import { MultisigTransaction } from "~/types";
-import { formatAmount, getVoyagerContractLink, truncateAddress } from "~/utils";
+import { addMultisigTransaction, findTransaction } from "~/state/utils";
+import { MultisigTransaction, TransactionStatus } from "~/types";
+import { compareStatuses, formatAmount, getVoyagerContractLink, truncateAddress } from "~/utils";
 import { StyledButton } from "./Button";
 
 const TransactionWrapper = styled("li", {
@@ -31,15 +33,46 @@ type TransactionProps = {
 }
 
 const Transaction = ({ multisigContract, threshold, transaction }: TransactionProps) => {
-  // TODO: Transaction listener
+  const { library: provider } = useStarknet();
+  
   useEffect(() => {
+    let heartbeat: NodeJS.Timer | false;
+    const cachedTransaction = findTransaction(transaction.latestTransactionHash);
 
-  })
+    const getLatestStatus = async () => {
+      if (multisigContract && transaction && transaction.latestTransactionHash && transaction.latestTransactionHash !== "") {
+        let tx_status;
+        
+        // Get the latest transaction status and stop polling if it has been finalized
+        const response = await provider.getTransactionReceipt(transaction.latestTransactionHash);
+        tx_status = response.status as TransactionStatus;
+        if (compareStatuses(tx_status, TransactionStatus.ACCEPTED_ON_L1) >= 0) {
+          heartbeat && clearInterval(heartbeat);
+        }
+
+        tx_status !== undefined &&
+          addMultisigTransaction(multisigContract.address, transaction, { hash: transaction.latestTransactionHash, status: tx_status });
+      }
+    };
+
+    // If the transaction is already finalized, no need to poll status.
+    if (compareStatuses(cachedTransaction?.status || TransactionStatus.NOT_RECEIVED, TransactionStatus.ACCEPTED_ON_L1) < 0) {
+      getLatestStatus();
+      heartbeat = setInterval(getLatestStatus, 5000);
+    }
+
+    return () => {
+      heartbeat && clearInterval(heartbeat);
+    };
+  }, [multisigContract, provider, transaction])
 
   const confirm = async (nonce: number) => {
     try {
-      const transaction = await multisigContract?.confirm_transaction(nonce)
+      if (multisigContract) {
+      const transaction = await multisigContract.confirm_transaction(nonce)
       console.log(transaction)
+      //addMultisigTransaction(multisigContract.address, )
+      }
     } catch (error) {
       console.error(error)
     }
@@ -48,6 +81,8 @@ const Transaction = ({ multisigContract, threshold, transaction }: TransactionPr
   const execute = async (nonce: number) => {
     try {
       const transaction = await multisigContract?.execute_transaction(nonce)
+      console.log(transaction)
+
     } catch (error) {
       console.error(error)
     }
