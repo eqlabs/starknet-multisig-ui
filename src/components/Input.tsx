@@ -312,10 +312,12 @@ export type InputProps = {
 
 export const ValidatedInput = (props: InputProps) => {
   const [overriddenState, overrideState] = useState<"invalid" | "valid" | undefined>(undefined)
+
   const validate = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     const validationResult = props.validationFunction(event)
     overrideState(validationResult ? "valid" : "invalid")
     props.onChange && props.onChange(event)
   }, [props])
-  return <Input {...props} state={overriddenState} onChange={(event) => validate(event)}/>
+
+  return <Input value={props.value} type={props.type} size={props.size} variant={props.variant} cursor={props.cursor} state={overriddenState} onChange={(event) => validate(event)}/>
 }
