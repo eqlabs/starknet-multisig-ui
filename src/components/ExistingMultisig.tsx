@@ -86,7 +86,7 @@ export const ExistingMultisig = ({ contractAddress }: MultisigProps) => {
         {loading ? <SkeletonLoader /> : <div>{account && signers.includes(validateAndParseAddress(account)) ? "You are a signer of this multisig contract." : "You cannot sign transactions in this multisig contract."}</div>}
         {loading ? <SkeletonLoader /> : <div>Required signers: {threshold + "/" + signers.length}</div>}
 
-        {multisig?.transactions && multisig.transactions.length > 0 && (
+        {multisig?.transactions && multisig.transactions.filter(tx => !tx.executed).length > 0 && (
           <>
             <hr></hr>
             <Legend as="h2">Pending Transactions</Legend>
