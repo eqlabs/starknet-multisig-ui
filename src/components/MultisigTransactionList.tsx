@@ -69,9 +69,8 @@ const Transaction = ({ multisigContract, threshold, transaction }: TransactionPr
   const confirm = async (nonce: number) => {
     try {
       if (multisigContract) {
-      const transaction = await multisigContract.confirm_transaction(nonce)
-      console.log(transaction)
-      //addMultisigTransaction(multisigContract.address, )
+        const transactionReceipt = await multisigContract.confirm_transaction(nonce)
+        addMultisigTransaction(multisigContract.address, transaction, { hash: transactionReceipt.transaction_hash, status: transactionReceipt.code })
       }
     } catch (error) {
       console.error(error)
@@ -80,9 +79,10 @@ const Transaction = ({ multisigContract, threshold, transaction }: TransactionPr
 
   const execute = async (nonce: number) => {
     try {
-      const transaction = await multisigContract?.execute_transaction(nonce)
-      console.log(transaction)
-
+      if (multisigContract) {
+        const transactionReceipt = await multisigContract?.execute_transaction(nonce)
+        addMultisigTransaction(multisigContract.address, transaction, { hash: transactionReceipt.transaction_hash, status: transactionReceipt.code })
+      }
     } catch (error) {
       console.error(error)
     }
