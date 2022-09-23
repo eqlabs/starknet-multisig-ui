@@ -1,9 +1,7 @@
 import { AnimatePresence } from "framer-motion";
 import type { NextPage } from "next";
-import BorderedContainer from "~/components/BorderedContainer";
 import Box from "~/components/Box";
 import { ConnectWallet } from "~/components/ConnectWallet";
-import Footer from "~/components/Footer";
 import Header from "~/components/Header";
 
 const Home: NextPage = () => (
@@ -27,21 +25,9 @@ const Home: NextPage = () => (
       }}
     >
       <AnimatePresence exitBeforeEnter>
-        <BorderedContainer
-          key="connect-account"
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -16 }}
-          transition={{
-            y: { type: "spring", stiffness: 300, damping: 30 },
-            opacity: { duration: 0.2 },
-          }}
-        >
-          <ConnectWallet />
-        </BorderedContainer>
+        <ConnectWallet />
       </AnimatePresence>
     </Box>
-    <Footer />
   </Box>
 );
 

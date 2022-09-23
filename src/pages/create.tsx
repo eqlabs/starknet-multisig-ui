@@ -2,7 +2,6 @@ import { AnimatePresence } from "framer-motion";
 import type { NextPage } from "next";
 import BorderedContainer from "~/components/BorderedContainer";
 import Box from "~/components/Box";
-import Footer from "~/components/Footer";
 import Header from "~/components/Header";
 import { NewMultisig } from "~/components/NewMultisig";
 
@@ -41,7 +40,6 @@ const Create: NextPage = () => (
         </BorderedContainer>
       </AnimatePresence>
     </Box>
-    <Footer />
   </Box>
 );
 

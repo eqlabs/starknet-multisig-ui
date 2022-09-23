@@ -3,7 +3,6 @@ import type { NextPage } from "next";
 import { useSnapshot } from "valtio";
 import BorderedContainer from "~/components/BorderedContainer";
 import Box from "~/components/Box";
-import Footer from "~/components/Footer";
 import { Legend } from "~/components/Forms";
 import Header from "~/components/Header";
 import ModeToggle from "~/components/ModeToggle";
@@ -60,7 +59,6 @@ const Contract: NextPage = () => (
         </BorderedContainer>
       </AnimatePresence>
     </Box>
-    <Footer />
   </Box>
 );
 

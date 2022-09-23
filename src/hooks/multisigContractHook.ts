@@ -1,4 +1,5 @@
 import { useStarknet } from "@starknet-react/core";
+import throttle from "lodash/throttle";
 import { useEffect, useMemo, useState } from "react";
 import { Abi, Contract, validateAndParseAddress } from "starknet";
 import { sanitizeHex } from "starknet/dist/utils/encode";
@@ -59,10 +60,7 @@ export const useMultisigContract = (
   }, [address, provider]);
 
   // Search for multisig in local cache
-  const cachedMultisig = useMemo(
-    () => findMultisig(validatedAddress),
-    [validatedAddress]
-  );
+  const cachedMultisig = findMultisig(validatedAddress);
 
   const { transaction } = useTransaction(
     cachedMultisig?.transactionHash,
@@ -80,6 +78,7 @@ export const useMultisigContract = (
         // Poll only if the contract itself is deployed
         if (
           status.value &&
+          signers.length > 0 &&
           !pendingStatuses.includes(status.value as TransactionStatus)
         ) {
           const { res } = (await contract?.get_transactions_len()) || {
@@ -103,7 +102,7 @@ export const useMultisigContract = (
     return () => {
       heartbeat && clearInterval(heartbeat);
     };
-  }, [contract, polling, pollingInterval, status.value]);
+  }, [contract, polling, pollingInterval, signers.length, status.value]);
 
   // Contract deployment status nudger
   useEffect(() => {
@@ -135,72 +134,79 @@ export const useMultisigContract = (
     contract && getContractStatus();
   }, [contract, send, status.value, transaction?.status]);
 
+  const fetchInfo = useMemo(
+    () =>
+      contract &&
+      status.value &&
+      !pendingStatuses.includes(status.value as TransactionStatus)
+        ? throttle(async () => {
+            setLoading(true);
+            try {
+              const { signers: signersResponse } =
+                (await contract?.get_signers()) || {
+                  signers: [],
+                };
+              const signers = signersResponse.map(toHex).map(sanitizeHex);
+              const { threshold } = (await contract?.get_threshold()) || {
+                threshold: toBN(0),
+              };
+
+              setSigners(signers.map(validateAndParseAddress));
+              setThreshold(threshold.toNumber());
+            } catch (e) {
+              console.error(e);
+            }
+            setLoading(false);
+          }, 5000)
+        : () => {},
+    [contract, status.value]
+  );
+
   // Basic info fetcher
   // TODO: Could be deprecated in favor of SSR / incremental static generation
   useEffect(() => {
-    const fetchInfo = async () => {
-      setLoading(true);
-      try {
-        // If contract is deployed, fetch more info
-        if (
-          status.value &&
-          !pendingStatuses.includes(status.value as TransactionStatus)
-        ) {
-          const { signers: signersResponse } =
-            (await contract?.get_signers()) || {
-              signers: [],
-            };
-          const signers = signersResponse.map(toHex).map(sanitizeHex);
-          const { threshold } = (await contract?.get_threshold()) || {
-            threshold: toBN(0),
-          };
-
-          setSigners(signers.map(validateAndParseAddress));
-          setThreshold(threshold.toNumber());
-        }
-      } catch (e) {
-        console.error(e);
-      }
-      setLoading(false);
-    };
-
     contract !== undefined && fetchInfo();
-
     return () => {
       setSigners([]);
       setThreshold(0);
       setTransactionCount(0);
     };
-  }, [contract, multisigs, provider, send, status.value]);
+  }, [contract, fetchInfo, multisigs, provider, send, status.value]);
+
+  const fetchTransactions = useMemo(
+    () =>
+      address && contract && transactionCount > 0
+        ? throttle(
+            async () => {
+              try {
+                let currentTransactionIndex = transactionCount - 1;
+
+                while (currentTransactionIndex >= 0) {
+                  const parsedTransaction = await getMultisigTransactionInfo(
+                    contract,
+                    currentTransactionIndex
+                  );
+                  addMultisigTransaction(address, parsedTransaction);
+                  currentTransactionIndex -= 1;
+                }
+              } catch (error) {
+                console.error(error);
+              }
+            },
+            5000,
+            { trailing: true }
+          )
+        : () => {},
+    [address, contract, transactionCount]
+  );
 
   // Fetch transaction info if transactionCount has changed
   useEffect(() => {
-    const fetchTransactions = async () => {
-      setLoading(true);
-      try {
-        if (contract && transactionCount > 0) {
-          let currentTransactionIndex = transactionCount - 1;
-
-          while (currentTransactionIndex >= 0) {
-            const parsedTransaction = await getMultisigTransactionInfo(
-              contract,
-              currentTransactionIndex
-            );
-            addMultisigTransaction(address, parsedTransaction);
-            currentTransactionIndex -= 1;
-          }
-        }
-      } catch (error) {
-        console.error(error);
-      }
-      setLoading(false);
-    };
-
     // Fetch transactions of this multisig if the contract is deployed
     status.value &&
       !pendingStatuses.includes(status.value as TransactionStatus) &&
       fetchTransactions();
-  }, [address, contract, status.value, transactionCount]);
+  }, [address, contract, fetchTransactions, status.value, transactionCount]);
 
   return {
     contract,

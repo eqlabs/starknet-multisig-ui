@@ -6,7 +6,6 @@ import { validateAndParseAddress } from "starknet";
 import BorderedContainer from "~/components/BorderedContainer";
 import Box from "~/components/Box";
 import { ExistingMultisig } from "~/components/ExistingMultisig";
-import Footer from "~/components/Footer";
 import Header from "~/components/Header";
 import ModeToggle from "~/components/ModeToggle";
 import { state } from "~/state";
@@ -69,7 +68,6 @@ const Contract: NextPage<SSRProps> = ({ contractAddress }) => {
           </BorderedContainer>
         </AnimatePresence>
       </Box>
-      <Footer />
     </Box>
   );
 }

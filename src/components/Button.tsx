@@ -19,6 +19,7 @@ export const StyledButton = styled("button", {
   textTransform: "uppercase",
   boxSizing: "border-box",
   userSelect: "none",
+  borderRadius: "9999px",
   "&::before": {
     boxSizing: "border-box",
     filter: "blur(6px)",
@@ -81,7 +82,7 @@ export const StyledButton = styled("button", {
         fontSize: "$xs",
       },
       md: {
-        height: "$14",
+        height: "$12",
         px: "$6",
         fontSize: "$lg",
       },
@@ -98,16 +99,13 @@ export const StyledButton = styled("button", {
         textUnderlineOffset: "2px",
       },
       default: {
-        backgroundColor: "$buttonBg",
-        background: "$buttonGradient",
+        background: "$buttonBg",
         color: "$buttonText",
         "@hover": {
           "&:hover": {
-            backgroundColor: "$buttonBgHover",
-            background: "$buttonHoverGradient",
+            background: "$buttonBgHover",
             "&::before": {
               animation: `${shine} 1260ms linear`,
-
               animationDelay: "130ms",
             },
             "&::after": {
@@ -116,8 +114,7 @@ export const StyledButton = styled("button", {
           },
         },
         "&:active": {
-          backgroundColor: "$buttonBgActive",
-          background: "$buttonActiveGradient",
+          background: "$buttonBgActive",
         },
         "&:focus": {
           boxShadow: "inset 0 0 0 1px $colors$focusOutline, inset 0 0 0 2px $colors$focusOutline",

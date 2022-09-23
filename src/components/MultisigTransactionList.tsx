@@ -1,12 +1,12 @@
 import { useStarknet } from "@starknet-react/core";
 import { styled } from "@stitches/react";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { Contract } from "starknet";
 import { uint256ToBN } from "starknet/dist/utils/uint256";
 import { toBN, toHex } from "starknet/utils/number";
 import { addMultisigTransaction, findTransaction } from "~/state/utils";
 import { MultisigTransaction, TransactionStatus } from "~/types";
-import { compareStatuses, formatAmount, getVoyagerContractLink, truncateAddress } from "~/utils";
+import { compareStatuses, formatAmount, getMultisigTransactionInfo, getVoyagerContractLink, truncateAddress } from "~/utils";
 import { StyledButton } from "./Button";
 
 const TransactionWrapper = styled("li", {
@@ -34,37 +34,56 @@ type TransactionProps = {
 
 const Transaction = ({ multisigContract, threshold, transaction }: TransactionProps) => {
   const { library: provider } = useStarknet();
-  
+  const [idleDelay, activeDelay] = [60000, 5000]
+
+  const getInteractionReadiness = useCallback(() => {
+    const cachedTransaction = findTransaction(transaction.latestTransactionHash);
+    return compareStatuses(cachedTransaction?.status || TransactionStatus.NOT_RECEIVED, TransactionStatus.ACCEPTED_ON_L2) < 0
+  }, [transaction.latestTransactionHash]);
+
   useEffect(() => {
     let heartbeat: NodeJS.Timer | false;
+    let latestStatus: TransactionStatus = TransactionStatus.NOT_RECEIVED;
+
     const cachedTransaction = findTransaction(transaction.latestTransactionHash);
 
     const getLatestStatus = async () => {
       if (multisigContract && transaction && transaction.latestTransactionHash && transaction.latestTransactionHash !== "") {
-        let tx_status;
-        
         // Get the latest transaction status and stop polling if it has been finalized
         const response = await provider.getTransactionReceipt(transaction.latestTransactionHash);
-        tx_status = response.status as TransactionStatus;
-        if (compareStatuses(tx_status, TransactionStatus.ACCEPTED_ON_L1) >= 0) {
-          heartbeat && clearInterval(heartbeat);
-        }
+        latestStatus = response.status as TransactionStatus;
 
-        tx_status !== undefined &&
-          addMultisigTransaction(multisigContract.address, transaction, { hash: transaction.latestTransactionHash, status: tx_status });
+        // Update transaction with newest status
+        latestStatus !== undefined &&
+        addMultisigTransaction(multisigContract.address, transaction, { hash: transaction.latestTransactionHash, status: latestStatus });
+        
+        // Switch to polling the whole multisig transaction when the latest transaction has finished
+        if (compareStatuses(latestStatus, TransactionStatus.ACCEPTED_ON_L1) >= 0) {
+          heartbeat && clearInterval(heartbeat);
+          heartbeat = setInterval(getMultisigTransaction, idleDelay);
+        }
       }
     };
 
-    // If the transaction is already finalized, no need to poll status.
+    const getMultisigTransaction = async () => {
+      if (multisigContract) {
+        const info = await getMultisigTransactionInfo(multisigContract, transaction.nonce);
+        addMultisigTransaction(multisigContract.address, info);
+      }
+    }
+
+    // If the latest transaction is already finalized, no need to poll for it
     if (compareStatuses(cachedTransaction?.status || TransactionStatus.NOT_RECEIVED, TransactionStatus.ACCEPTED_ON_L1) < 0) {
       getLatestStatus();
-      heartbeat = setInterval(getLatestStatus, 5000);
+      heartbeat = setInterval(getLatestStatus, activeDelay);
+    } else if (multisigContract) {
+      heartbeat = setInterval(getMultisigTransaction, idleDelay);
     }
 
     return () => {
       heartbeat && clearInterval(heartbeat);
     };
-  }, [multisigContract, provider, transaction])
+  }, [activeDelay, idleDelay, multisigContract, provider, transaction])
 
   const confirm = async (nonce: number) => {
     try {
@@ -106,7 +125,7 @@ const Transaction = ({ multisigContract, threshold, transaction }: TransactionPr
     <TransactionInfo>
       <span>Confirmations: {transaction.threshold + "/" + threshold}</span>
       <div>
-        {transaction.threshold < threshold ? <StyledButton size="sm" onClick={() => confirm(transaction.nonce)}>Confirm</StyledButton> : <StyledButton disabled={transaction.threshold < threshold} size="sm" onClick={() => execute(transaction.nonce)}>Execute</StyledButton>
+        {transaction.threshold < threshold ? <StyledButton disabled={!getInteractionReadiness()} size="sm" onClick={() => confirm(transaction.nonce)}>Confirm</StyledButton> : <StyledButton disabled={!getInteractionReadiness() && transaction.threshold < threshold} size="sm" onClick={() => execute(transaction.nonce)}>Execute</StyledButton>
         }
       </div>
     </TransactionInfo>

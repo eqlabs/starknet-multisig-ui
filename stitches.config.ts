@@ -40,8 +40,10 @@ export const {
       ...mint,
       accent: "$mint9",
       background: "$indigo3",
-      text: "$indigo12",
-      textMuted: "#464C82",
+      backgroundGradient:
+        "linear-gradient(360deg, #E6CCA6 -1.58%, #7A6B82 43.83%, #011A38 95.82%)",
+      text: "#FFFFFF",
+      textMuted: "#FFFFFF",
       error: "$red9",
       warning: "$amber11",
       success: "$grass11",
@@ -49,12 +51,9 @@ export const {
       inputBg: "$indigo1",
       inputBorder: "$indigo12",
       buttonText: "$indigo1",
-      buttonBg: "$indigo12",
-      buttonHover: "$indigo11",
+      buttonBg: "#EFF4FB",
+      buttonHover: "#EFF4FB",
       buttonActive: "$indigo10",
-      buttonGradient: "linear-gradient(210deg, $indigo9, $indigo12)",
-      buttonHoverGradient: "linear-gradient(210deg, $indigo10, $indigo12)",
-      buttonActiveGradient: "linear-gradient(210deg, $indigo11, $indigo12)",
     },
     fonts: {
       body: "'Space Grotesk', sans-serif",
@@ -356,7 +355,8 @@ export const darkTheme = createTheme("dark", {
 
     accent: "$mint9",
     background: "$indigo1",
-    text: "$indigo12",
+    backgroundGradient: "linear-gradient(180deg, #020112 0%, #000958 100%)",
+    text: "#FFFFFF",
     textMuted: "#B6B8C6",
     error: "$red9",
     warning: "$amber11",
@@ -389,7 +389,7 @@ export const globalStyles = globalCss({
     },
   ],
   "html, body": {
-    backgroundColor: "$background",
+    background: "$backgroundGradient",
     color: "$text",
     fontFamily: "$body",
     fontSize: "16px",
@@ -401,7 +401,7 @@ export const globalStyles = globalCss({
     color: "inherit",
   },
   hr: {
-    border: "2px solid $accent",
+    border: "1px solid $text",
     margin: "$6 0",
   },
   "h1, h2, h3, h4, h5": {
