@@ -5,7 +5,6 @@ import BorderedContainer from "~/components/BorderedContainer";
 import Box from "~/components/Box";
 import { Legend } from "~/components/Forms";
 import Header from "~/components/Header";
-import ModeToggle from "~/components/ModeToggle";
 import MultisigAddressInput from "~/components/MultisigAddressInput";
 import MultisigList from "~/components/MultisigList";
 import { state } from "~/state";
@@ -52,7 +51,6 @@ const Contract: NextPage = () => (
             opacity: { duration: 0.2 },
           }}
         >
-          <ModeToggle />
           <Legend as="h2">Manual Input</Legend>
           <MultisigAddressInput />
           <Multisigs />

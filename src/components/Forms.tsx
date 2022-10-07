@@ -14,7 +14,6 @@ export const Legend = styled("legend", {
 });
 
 export const Field = styled("div", {
-  margin: "$4 0",
   display: "block",
   variants: {
     inactive: {
@@ -28,4 +27,6 @@ export const Field = styled("div", {
 export const Label = styled("label", {
   marginBottom: "$2",
   display: "block",
+  fontSize: "small",
+  textTransform: "uppercase"
 });

@@ -1,7 +1,7 @@
 import { styled } from "../../stitches.config";
 
 const Path = styled("path", {
-  fill: "$text",
+  fill: "#FFFFFF",
 });
 
 export function Horizontal() {

@@ -1,8 +1,7 @@
 import { useRouter } from "next/router";
 import { useState } from "react";
-import { StyledButton } from "./Button";
 import { Field, Fieldset, Label } from "./Forms";
-import { Input } from "./Input";
+import { EmbeddedSubmitInput } from "./Input";
 
 const MultisigAddressInput = () => {
   const router = useRouter();
@@ -11,13 +10,13 @@ const MultisigAddressInput = () => {
     <Fieldset>
       <Field>
         <Label>Contract address:</Label>
-        <Input
+        <EmbeddedSubmitInput
           type="text"
           value={address}
           onChange={(e) => setAddress(e.target.value)}
-        ></Input>
+          onClick={() => router.push(`wallet/${address}`)}
+        ></EmbeddedSubmitInput>
       </Field>
-      <StyledButton fullWidth onClick={() => router.push(`wallet/${address}`)}>Open Multisig</StyledButton>
     </Fieldset>
   )
 }

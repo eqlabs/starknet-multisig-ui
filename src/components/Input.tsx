@@ -1,16 +1,44 @@
-import { ChangeEvent, ChangeEventHandler, useCallback, useState } from "react";
+import { ChangeEvent, ChangeEventHandler, CSSProperties, MouseEventHandler, useCallback, useState } from "react";
 import { styled } from "../../stitches.config";
+import Button from "./Button";
+
+const Path = styled("path", {
+  stroke: "$buttonText",
+  transform: "translate(1px, 0)",
+});
+
+export const RightArrow = () => (
+  <svg width="21" height="20" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <Path d="M3.91321 12H20.4132" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <Path d="M13.6632 5.25L20.4132 12L13.6632 18.75" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+)
+
+export const AdvanceButton = (props: InputProps) => (
+  <Button style={Object.assign({ display: "flex", borderRadius: "9999px", height: "2rem", width: "2rem", background: "$buttonBg", border: "0", cursor: "pointer", justifyContent: "center", alignItems: "center", padding: "0", lineHeight: 0 }, props.style || {})} onClick={props.onClick}>
+    <RightArrow />
+  </Button>
+)
+
+export const EmbeddedSubmitInput = (props: InputProps) => (
+  <div style={{display: "flex", flexDirection: "row", position: "relative", alignItems: "center"}}>
+    <Input value={props.value} type={props.type} size={props.size} variant={props.variant} cursor={props.cursor} onChange={props.onChange} style={{ width: "100%"}}>
+    </Input>
+    <AdvanceButton onClick={props.onClick} style={{ position: "absolute", right: "0.3rem", opacity: "0.2" }}/>
+  </div>
+)
 
 export const Input = styled("input", {
   // Reset
   appearance: "none",
   borderWidth: "0",
+  borderRadius: "9999px",
   boxSizing: "border-box",
   fontFamily: "inherit",
   outline: "none",
   width: "100%",
   flex: "1",
-  backgroundColor: "$inputBg",
+  backgroundColor: "transparent",
   display: "inline-flex",
   alignItems: "center",
   justifyContent: "center",
@@ -159,7 +187,7 @@ export const Select = styled("select", {
   outline: "none",
   width: "auto",
   flex: "1",
-  backgroundColor: "$inputBg",
+  backgroundColor: "transparent",
   display: "inline-flex",
   alignItems: "center",
   justifyContent: "center",
@@ -169,6 +197,7 @@ export const Select = styled("select", {
   color: "$mauve12",
   boxShadow: `0 0 0 1px $colors$inputBorder`,
   height: 35,
+  borderRadius: "32px",
   WebkitTapHighlightColor: "rgba(0,0,0,0)",
   padding: "0 $1 0 $2",
   "&::before": {
@@ -300,21 +329,23 @@ export const Select = styled("select", {
 });
 
 export type InputProps = {
-  validationFunction: (event: ChangeEvent<HTMLInputElement>) => boolean;
+  validationFunction?: (event: ChangeEvent<HTMLInputElement>) => boolean;
   value?: string;
   onChange?: ChangeEventHandler<HTMLInputElement>;
+  onClick?: MouseEventHandler<HTMLButtonElement>;
   type?: string;
   size?: "sm" | "md" | "lg" | undefined;
   variant?: "ghost" | "deep" | undefined;
   state?: "invalid" | "valid" | undefined;
   cursor?: "text" | "default" | undefined;
+  style?: CSSProperties;
 }
 
 export const ValidatedInput = (props: InputProps) => {
   const [overriddenState, overrideState] = useState<"invalid" | "valid" | undefined>(undefined)
 
   const validate = useCallback((event: ChangeEvent<HTMLInputElement>) => {
-    const validationResult = props.validationFunction(event)
+    const validationResult = props.validationFunction ? props.validationFunction(event) : true
     overrideState(validationResult ? "valid" : "invalid")
     props.onChange && props.onChange(event)
   }, [props])

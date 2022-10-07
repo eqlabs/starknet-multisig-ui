@@ -103,7 +103,7 @@ export const StyledButton = styled("button", {
         color: "$buttonText",
         "@hover": {
           "&:hover": {
-            background: "$buttonBgHover",
+            background: "$buttonHover",
             "&::before": {
               animation: `${shine} 1260ms linear`,
               animationDelay: "130ms",

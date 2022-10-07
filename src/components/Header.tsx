@@ -12,6 +12,7 @@ const Header: React.FC = () => {
         alignItems: "center",
         justifyContent: "space-between",
         padding: "$6 0",
+        color: "#FFFFFF",
       }}
     >
       <Box css={{ width: "100%", display: "flex", flexDirection: "row", alignItems: "center", gap: "2em" }}>

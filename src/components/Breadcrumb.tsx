@@ -8,6 +8,7 @@ const Nav = styled("nav", {
   flexDirection: "row",
   "> a": {
     textDecoration: "none",
+    textTransform: "uppercase",
     "&:hover": {
       textDecoration: "underline"
     }
@@ -42,7 +43,8 @@ const Breadcrumb= () => {
 
   return (
     <Nav>
-      {path.map((link, index) => {
+      <Link href="/">HOME</Link><Separator/>
+      {path.filter((link, index) => {
         if (index > 0) {
           let href = path.filter((_part, j) => {
             if (j <= index) {
@@ -52,15 +54,17 @@ const Breadcrumb= () => {
           }).join("/")
           let text = link.toUpperCase()
 
-          if (link.substring(0, 2) === "0x") {
+          if (link === "") {
+            return false
+          } else if (link.substring(0, 2) === "0x") {
             text = link.substring(0, 5).concat("…").concat(link.substring(link.length - 3, link.length)).toUpperCase()
-          } else if (link === "") {
-            text = "START"
+          } else {
+            text = link.toUpperCase()
           }
 
-          let returnable = <Link href={href} key={href}>{text}</Link>
+          let returnable = <Link href={href} key={href} passHref><Separator/>{text.toUpperCase()}</Link>
           if (index < path.length - 1) {
-            returnable = <NavDiv key={href}><Link href={href}>{text}</Link><Separator/></NavDiv>
+            returnable = <NavDiv key={href}><Link href={href}>{text.toUpperCase()}</Link><Separator/></NavDiv>
           }
           return returnable
         }

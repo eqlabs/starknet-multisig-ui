@@ -14,7 +14,7 @@ import { useContractFactory } from "~/hooks/deploy";
 import MultisigSource from "../../public/Multisig.json";
 import { styled } from "../../stitches.config";
 import { Field, Fieldset, Label, Legend } from "./Forms";
-import ModeToggle from "./ModeToggle";
+import InnerContainer from "./InnerContainer";
 
 const Threshold = styled("div", {
   padding: "0 0 $4",
@@ -106,11 +106,10 @@ export function NewMultisig() {
 
   return (
     <div>
-      <ModeToggle />
-
       {!deploying ? 
       <Fieldset>
-        <Legend as="h2">Add Signers</Legend>
+        <Legend as="h2">Create a new multisig</Legend>
+        <hr/>
         <Paragraph css={{ color: "$textMuted" }}>
           Your contract will have one or more signers. We have prefilled the
           first signer with your connected wallet details, but you are free to
@@ -118,6 +117,7 @@ export function NewMultisig() {
         </Paragraph>
 
         {/* Inputs */}
+        <InnerContainer>
         {signers.map((signer, i) => (
           <Field key={i} inactive={signers.length > 2 && i === totalSigners.valueOf() && signer === ""}>
             <Label>Signer {i + 1} address:</Label>
@@ -129,42 +129,50 @@ export function NewMultisig() {
             ></Input>
           </Field>
         ))}
+        </InnerContainer>
 
-        <hr />
         <Paragraph css={{ color: "$textMuted" }}>
           Specify how many of them have to confirm a transaction before it
           gets executed. In general, the more confirmations required, the more
           secure your contract is.
         </Paragraph>
-        <Threshold>
+
+        <InnerContainer css={{flexDirection: "row", justifyContent: "space-between", flexWrap: "wrap", gap: "$1", padding: "$2 $8"}}>
           <Paragraph
             css={{
               fontWeight: "500",
-              marginBottom: "$3",
             }}
           >
             Transaction requires the confirmation of
           </Paragraph>
-          <Select
-            css={{
-              margin: "0 $2 0 0",
-            }}
-            onChange={(e) => {
-              onThresholdChange(e.target.value);
-            }}
-            value={signerThreshold}
-          >
-            {[...Array(totalSigners).keys()].map((_, index) => {
-              const thresholdOption = index + 1
-              return <option value={thresholdOption.toString()} key={`thresholdOption-${thresholdOption.toString()}`}>{thresholdOption.toString()}</option>
-            })}
-          </Select>{" "}
-          of total {totalSigners} signers{" "}
-        </Threshold>
+          <div style={{display: "flex", flexDirection: "row", alignItems: "center"}}>
+            <Select
+              css={{
+                margin: "0 $2 0 0",
+                flexGrow: "0",
+              }}
+              onChange={(e) => {
+                onThresholdChange(e.target.value);
+              }}
+              value={signerThreshold}
+            >
+              {[...Array(totalSigners).keys()].map((_, index) => {
+                const thresholdOption = index + 1
+                return <option value={thresholdOption.toString()} key={`thresholdOption-${thresholdOption.toString()}`}>{thresholdOption.toString()}</option>
+              })}
+            </Select>{" "}
+            of {totalSigners} signers{" "}
+          </div>
+        </InnerContainer>
 
-        <Button fullWidth onClick={onDeploy}>
-          Deploy multisig contract
-        </Button>
+        <div style={{ display: "flex", flexDirection: "row", justifyContent: "space-between", gap: "1rem", marginTop: "1.5rem"}}>
+          <Button outline onClick={router.back}>
+            Go back
+          </Button>
+          <Button style={{flexGrow: "1"}} onClick={onDeploy}>
+            Deploy multisig contract
+          </Button>
+        </div>
       </Fieldset>
       : <div>Deploying...</div>}
     </div>

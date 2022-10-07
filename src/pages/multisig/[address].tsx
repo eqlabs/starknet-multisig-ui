@@ -7,7 +7,6 @@ import BorderedContainer from "~/components/BorderedContainer";
 import Box from "~/components/Box";
 import { ExistingMultisig } from "~/components/ExistingMultisig";
 import Header from "~/components/Header";
-import ModeToggle from "~/components/ModeToggle";
 import { state } from "~/state";
 import { SSRProps } from "~/types";
 
@@ -63,7 +62,6 @@ const Contract: NextPage<SSRProps> = ({ contractAddress }) => {
               opacity: { duration: 0.2 },
             }}
           >
-            <ModeToggle />
             {validatedAddress && <ExistingMultisig contractAddress={validatedAddress} />}
           </BorderedContainer>
         </AnimatePresence>
