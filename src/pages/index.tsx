@@ -16,10 +16,7 @@ import { state } from "~/state";
 const Multisigs = () => {
   const { multisigs } = useSnapshot(state);
   return <>{multisigs?.length > 0 && (
-    <>
-      <hr />
-      <MultisigList />
-    </>
+    <MultisigList />
   )}</>
 }
 
