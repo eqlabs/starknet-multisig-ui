@@ -23,11 +23,11 @@ const Contract: NextPage<SSRProps> = ({ contractAddress }) => {
           state.multisigs.push({ address: address, transactions: [] });
         }
       } else {
-        router.push("/wallet");
+        router.push("/create");
       }
     } catch (e) {
-      console.error("Not a valid address, redirecting back to /wallet");
-      router.push("/wallet");
+      console.error("Not a valid address, redirecting back to /create");
+      router.push("/create");
     }
   }, [contractAddress, router])
 

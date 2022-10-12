@@ -13,8 +13,9 @@ const MultisigAddressInput = () => {
         <EmbeddedSubmitInput
           type="text"
           value={address}
+          placeholder="Insert a contract address"
           onChange={(e) => setAddress(e.target.value)}
-          onClick={() => router.push(`wallet/${address}`)}
+          onClick={() => router.push(`multisig/${address}`)}
         ></EmbeddedSubmitInput>
       </Field>
     </Fieldset>
