@@ -13,7 +13,7 @@ export const EmbeddedSubmitInput = (props: InputProps) => (
   <div style={{display: "flex", flexDirection: "row", position: "relative", alignItems: "center"}}>
     <Input value={props.value} type={props.type} size={props.size} variant={props.variant} cursor={props.cursor} onChange={props.onChange} placeholder={props.placeholder} style={{ width: "100%"}}>
     </Input>
-    <AdvanceButton onClick={props.onClick} style={{ position: "absolute", right: "0.3rem", opacity: "0.2" }}/>
+    <AdvanceButton onClick={props.onClick} style={{ position: "absolute", right: "0.3rem", opacity: props.disabled ? "0.2" : "1" }}/>
   </div>
 )
 
@@ -329,6 +329,7 @@ export type InputProps = {
   cursor?: "text" | "default" | undefined;
   style?: CSSProperties;
   placeholder?: string;
+  disabled?: boolean;
 }
 
 export const ValidatedInput = (props: InputProps) => {

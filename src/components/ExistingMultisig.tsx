@@ -9,6 +9,7 @@ import { validateAndParseAddress } from 'starknet';
 import { useMultisigContract } from "~/hooks/multisigContractHook";
 import { findMultisig } from '~/state/utils';
 import { pendingStatuses } from '~/types';
+import { voyagerBaseUrl } from '~/utils/config';
 import ArbitraryTransaction from './ArbitraryTransaction';
 import DeploymentStatus from './DeploymentStatus';
 import Erc20Transaction from './Erc20Transaction';
@@ -58,8 +59,6 @@ export const ExistingMultisig = ({ contractAddress }: MultisigProps) => {
 
   const multisig = findMultisig(contractAddress)
 
-  // TODO: Make these configurable by used chain
-  const voyagerBaseUrl = "https://goerli.voyager.online/"
   const transactionFound = multisig?.transactionHash
   const transactionLink = voyagerBaseUrl + "tx/" + transactionFound
   const contractLink =
