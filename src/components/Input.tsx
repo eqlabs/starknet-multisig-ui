@@ -1,18 +1,7 @@
 import { ChangeEvent, ChangeEventHandler, CSSProperties, MouseEventHandler, useCallback, useState } from "react";
 import { styled } from "../../stitches.config";
 import Button from "./Button";
-
-const Path = styled("path", {
-  stroke: "$buttonText",
-  transform: "translate(1px, 0)",
-});
-
-export const RightArrow = () => (
-  <svg width="21" height="20" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <Path d="M3.91321 12H20.4132" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <Path d="M13.6632 5.25L20.4132 12L13.6632 18.75" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-)
+import { RightArrow } from "./Icons";
 
 export const AdvanceButton = (props: InputProps) => (
   <Button style={Object.assign({ display: "flex", borderRadius: "9999px", height: "2rem", width: "2rem", background: "$buttonBg", border: "0", cursor: "pointer", justifyContent: "center", alignItems: "center", padding: "0", lineHeight: 0 }, props.style || {})} onClick={props.onClick}>
@@ -22,7 +11,7 @@ export const AdvanceButton = (props: InputProps) => (
 
 export const EmbeddedSubmitInput = (props: InputProps) => (
   <div style={{display: "flex", flexDirection: "row", position: "relative", alignItems: "center"}}>
-    <Input value={props.value} type={props.type} size={props.size} variant={props.variant} cursor={props.cursor} onChange={props.onChange} style={{ width: "100%"}}>
+    <Input value={props.value} type={props.type} size={props.size} variant={props.variant} cursor={props.cursor} onChange={props.onChange} placeholder={props.placeholder} style={{ width: "100%"}}>
     </Input>
     <AdvanceButton onClick={props.onClick} style={{ position: "absolute", right: "0.3rem", opacity: "0.2" }}/>
   </div>
@@ -74,7 +63,7 @@ export const Input = styled("input", {
     },
   },
   "&::placeholder": {
-    color: "$extraMuted",
+    color: "$textMuted",
   },
   "&:disabled": {
     opacity: "0.5",
@@ -339,6 +328,7 @@ export type InputProps = {
   state?: "invalid" | "valid" | undefined;
   cursor?: "text" | "default" | undefined;
   style?: CSSProperties;
+  placeholder?: string;
 }
 
 export const ValidatedInput = (props: InputProps) => {
