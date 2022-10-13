@@ -2,6 +2,8 @@ import { styled } from "@stitches/react";
 import Link from "next/link";
 import { useSnapshot } from "valtio";
 import { state } from "~/state";
+import { ClockCounterClockwise, RightArrow } from "./Icons";
+import InnerContainer from "./InnerContainer";
 
 const Multisig = styled("div", {
   margin: "$4 0",
@@ -11,7 +13,6 @@ const Multisig = styled("div", {
   flexDirection: "row",
   justifyContent: "space-evenly",
   maxWidth: "100%",
-  background: "$background",
   variants: {
     inactive: {
       true: {
@@ -90,7 +91,7 @@ const TextFade = styled("div", {
         maxWidth: "100%",
         height: "100%",
         right: 0,
-        background: "linear-gradient(to left, $background 0%, transparent 100%);"
+        background: "linear-gradient(to left, $secondaryBackground 0%, transparent 100%);"
       }
     },
     right: {
@@ -102,7 +103,7 @@ const TextFade = styled("div", {
         maxWidth: "100%",
         height: "100%",
         left: 0,
-        background: "linear-gradient(to right, $background 0%, transparent 100%);"
+        background: "linear-gradient(to right, $secondaryBackground 0%, transparent 100%);"
       }
     }
   },
@@ -125,13 +126,15 @@ const ellipsis = "…"
 const MultisigList = () => {
   const { multisigs } = useSnapshot(state)
   return (
-    <>
-      {multisigs?.map(contract => (
-        <Multisig key={`contractList-${contract.address}`}>
-          <Link href={`/multisig/${contract.address}`} passHref><LinkWrapper><AddressPart left>{contract.address}<TextFade left /></AddressPart><AddressPart middle>{ellipsis}</AddressPart><AddressPart right>{contract.address}<TextFade right /></AddressPart></LinkWrapper></Link>
+    <InnerContainer css={{marginTop: "$6"}}>
+      <span style={{display: "flex", flexDirection: "row", alignItems: "center", gap: "0.5rem"}}><ClockCounterClockwise css={{stroke: "$text"}}/>VISITED MULTISIGS</span>
+
+      {multisigs?.map((contract, index) => (
+        <Multisig key={`contractList-${contract.address}`} css={{margin: "0", padding: "$4 0", borderBottom: "1px $textMuted solid", borderTop: index===0 ? "1px $textMuted solid" : "0"}}>
+          <Link href={`/multisig/${contract.address}`} passHref><LinkWrapper><AddressPart left>{contract.address}<TextFade left /></AddressPart><AddressPart middle>{ellipsis}</AddressPart><AddressPart right>{contract.address}<TextFade right /></AddressPart><RightArrow css={{flexShrink: "0", stroke: "$text", height: "3rem", width: "3rem"}}/></LinkWrapper></Link>
         </Multisig>
       ))}
-    </>
+    </InnerContainer>
   )
 }
 

@@ -48,7 +48,7 @@ const Breadcrumb= () => {
   return (
     <Nav>
       {/* Link to homepage */}
-      <Link href="/" passHref><a style={{display: "flex", flexWrap: "nowrap", flexDirection: "row", alignItems: "center", gap: "0.5rem" }}><House css={{stroke: "$text"}}/>HOME</a></Link>
+      <Link href="/" passHref><a style={{display: "flex", flexWrap: "nowrap", flexDirection: "row", alignItems: "center", gap: "0.5rem" }}><House css={{stroke: "#FFFFFF"}}/>HOME</a></Link>
 
       {/* Print remaining path */}
       {path.map((subPath) => {

@@ -110,7 +110,7 @@ export function NewMultisig() {
       <Fieldset>
         <Legend as="h2">Create a new multisig</Legend>
         <hr/>
-        <Paragraph css={{ color: "$textMuted" }}>
+        <Paragraph>
           Your contract will have one or more signers. We have prefilled the
           first signer with your connected wallet details, but you are free to
           change this to a different signer.
@@ -131,7 +131,7 @@ export function NewMultisig() {
         ))}
         </InnerContainer>
 
-        <Paragraph css={{ color: "$textMuted" }}>
+        <Paragraph>
           Specify how many of them have to confirm a transaction before it
           gets executed. In general, the more confirmations required, the more
           secure your contract is.
