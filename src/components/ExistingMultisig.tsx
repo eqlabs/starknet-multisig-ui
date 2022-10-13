@@ -9,7 +9,7 @@ import { validateAndParseAddress } from 'starknet';
 import { useMultisigContract } from "~/hooks/multisigContractHook";
 import { findMultisig } from '~/state/utils';
 import { pendingStatuses } from '~/types';
-import { voyagerBaseUrl } from '~/utils/config';
+import { getVoyagerContractLink, getVoyagerTransactionLink } from '~/utils';
 import ArbitraryTransaction from './ArbitraryTransaction';
 import DeploymentStatus from './DeploymentStatus';
 import Erc20Transaction from './Erc20Transaction';
@@ -60,9 +60,8 @@ export const ExistingMultisig = ({ contractAddress }: MultisigProps) => {
   const multisig = findMultisig(contractAddress)
 
   const transactionFound = multisig?.transactionHash
-  const transactionLink = voyagerBaseUrl + "tx/" + transactionFound
-  const contractLink =
-    voyagerBaseUrl + "contract/" + contractAddress;
+  const transactionLink = getVoyagerTransactionLink(contractAddress);
+  const contractLink = getVoyagerContractLink(contractAddress);
 
   useEffect(() => {
     if (!loading) {
