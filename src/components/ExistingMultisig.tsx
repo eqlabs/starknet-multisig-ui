@@ -14,6 +14,7 @@ import ArbitraryTransaction from './ArbitraryTransaction';
 import DeploymentStatus from './DeploymentStatus';
 import Erc20Transaction from './Erc20Transaction';
 import { Legend } from "./Forms";
+import InnerContainer from './InnerContainer';
 import MultisigTransactionList from './MultisigTransactionList';
 import SkeletonLoader from './SkeletonLoader';
 
@@ -26,7 +27,7 @@ const StyledTabs = styled(Tabs.List, {
   position: "relative",
   display: "flex",
   flexDirection: "row",
-  height: "$14",
+  height: "$12",
 });
 
 const StyledTrigger = styled(Tabs.Trigger, {
@@ -37,15 +38,24 @@ const StyledTrigger = styled(Tabs.Trigger, {
   cursor: "pointer",
   flexGrow: 1,
   background: "transparent",
-  border: 0,
-  borderBottom: "4px solid $textMuted",
+  border: "1px solid $text",
+  borderRadius: "32px",
+  padding: "$1",
   color: "$textMuted",
   fontFamily: "$body",
-  fontSize: "$lg",
+  fontSize: "$md",
   '&[data-state="active"]': {
     color: "$text",
-    borderBottom: "4px solid $accent",
+    background: "$buttonActive"
   },
+  variants: {
+    right: {
+      borderRadius: "32px 32px 0px 0px"
+    },
+    left: {
+      borderRadius: "32px 32px 0px 0px"
+    }
+  }
 });
 
 export const ExistingMultisig = ({ contractAddress }: MultisigProps) => {
@@ -86,27 +96,31 @@ export const ExistingMultisig = ({ contractAddress }: MultisigProps) => {
 
         {multisig?.transactions && multisig.transactions.filter(tx => !tx.executed).length > 0 && (
           <>
-            <hr></hr>
-            <Legend as="h2">Pending Transactions</Legend>
-            <MultisigTransactionList multisigContract={multisigContract} transactions={multisig?.transactions} threshold={threshold} />
+            <hr />
+            <InnerContainer>
+              <Legend as="h2">Pending Transactions</Legend>
+              <MultisigTransactionList multisigContract={multisigContract} transactions={multisig?.transactions} threshold={threshold} />
+            </InnerContainer>
           </>
         )}
 
-        <hr></hr>
-        <Legend as="h2">New Transaction</Legend>
-        <Tabs.Root defaultValue="tab1" orientation="vertical">
-          <StyledTabs aria-label="tabs example">
-            <StyledTrigger value="tab1">ERC-20 Transfer</StyledTrigger>
-            <StyledTrigger value="tab2">Arbitrary Transaction</StyledTrigger>
-          </StyledTabs>
-          
-          <Tabs.Content value="tab1">
-            <Erc20Transaction multisigContract={multisigContract} />
-          </Tabs.Content>
-          <Tabs.Content value="tab2">
-            <ArbitraryTransaction multisigContract={multisigContract} />
-          </Tabs.Content>
-        </Tabs.Root>
+        <hr />
+        <InnerContainer>
+          <Legend as="h2">New Transaction</Legend>
+          <Tabs.Root defaultValue="tab1" orientation="vertical">
+            <StyledTabs aria-label="tabs example">
+              <StyledTrigger value="tab1" left>ERC-20 Transfer</StyledTrigger>
+              <StyledTrigger value="tab2" right>Custom Transaction</StyledTrigger>
+            </StyledTabs>
+            
+            <Tabs.Content value="tab1">
+              <Erc20Transaction multisigContract={multisigContract} />
+            </Tabs.Content>
+            <Tabs.Content value="tab2">
+              <ArbitraryTransaction multisigContract={multisigContract} />
+            </Tabs.Content>
+          </Tabs.Root>
+        </InnerContainer>
       </>
       ) : <>
         <div style={{display: "flex", flexDirection: "row", justifyContent: "space-between"}}>

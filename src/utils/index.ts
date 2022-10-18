@@ -84,7 +84,6 @@ export const formatAmount = (
       acc >= right.length ? right : right.substring(0, acc),
     ].join("");
   } else {
-    console.log("OH FUG :--D", decimalIndex, bnStr, amount);
     formatted = amount.toString();
   }
 

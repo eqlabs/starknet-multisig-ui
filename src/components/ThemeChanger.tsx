@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
-import { styled } from "../../stitches.config";
 import { useTheme } from "next-themes";
-import { FiMoon, FiSun } from "react-icons/fi";
+import { useEffect, useState } from "react";
+import { FiMoon, FiSunrise } from "react-icons/fi";
+import { styled } from "../../stitches.config";
 
 const ThemeSwitch = styled("div", {
   width: "44px",
@@ -28,7 +28,7 @@ const ThemeChanger = () => {
         setTheme(theme && theme === "light" ? "dark" : "light");
       }}
     >
-      {theme === "dark" ? <FiSun /> : <FiMoon />}
+      {theme === "dark" ? <FiSunrise /> : <FiMoon />}
     </ThemeSwitch>
   );
 };

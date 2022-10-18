@@ -4,8 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import { Abi, Contract, validateAndParseAddress } from "starknet";
 import { sanitizeHex } from "starknet/dist/utils/encode";
 import { toBN, toHex } from "starknet/dist/utils/number";
-import { useSnapshot } from "valtio";
-import { state } from "~/state";
 import { addMultisigTransaction, findMultisig } from "~/state/utils";
 import { pendingStatuses, TransactionStatus } from "~/types";
 import { compareStatuses, getMultisigTransactionInfo } from "~/utils";
@@ -24,8 +22,6 @@ export const useMultisigContract = (
   transactionCount: number;
 } => {
   const pollingInterval = polling || 20000;
-
-  const { multisigs } = useSnapshot(state);
 
   const { library: provider } = useStarknet();
 
@@ -171,7 +167,7 @@ export const useMultisigContract = (
       setThreshold(0);
       setTransactionCount(0);
     };
-  }, [contract, fetchInfo, multisigs, provider, send, status.value]);
+  }, [contract, fetchInfo]);
 
   const fetchTransactions = useMemo(
     () =>

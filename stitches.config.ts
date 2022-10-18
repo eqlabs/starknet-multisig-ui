@@ -54,7 +54,7 @@ export const {
       buttonText: "$indigo1",
       buttonBg: "#050C51",
       buttonHover: "#050C51",
-      buttonActive: "$indigo10",
+      buttonActive: "#D8F8FF",
       buttonOutlineColor: "$buttonBg",
     },
     fonts: {
@@ -367,6 +367,7 @@ export const darkTheme = createTheme("dark", {
     buttonBg: "#FFFFFF",
     buttonHover: "#EFF4FB",
     buttonText: "#000000",
+    buttonActive: "rgba(43, 133, 153, 0.53)",
     buttonGradient: "linear-gradient(210deg, $whiteA12, $whiteA9)",
     buttonHoverGradient: "linear-gradient(210deg, $whiteA12, $whiteA10)",
     buttonActiveGradient: "linear-gradient(210deg, $whiteA12, $whiteA11)",
