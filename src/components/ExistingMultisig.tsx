@@ -14,7 +14,7 @@ import ArbitraryTransaction from './ArbitraryTransaction';
 import DeploymentStatus from './DeploymentStatus';
 import Erc20Transaction from './Erc20Transaction';
 import { Legend } from "./Forms";
-import InnerContainer from './InnerContainer';
+import InnerContainer, { InnerContainerTitle } from './InnerContainer';
 import MultisigTransactionList from './MultisigTransactionList';
 import SkeletonLoader from './SkeletonLoader';
 
@@ -32,14 +32,13 @@ const StyledTabs = styled(Tabs.List, {
 
 const StyledTrigger = styled(Tabs.Trigger, {
   display: "flex",
-  height: "100%",
+  height: "$10",
   alignItems: "center",
   justifyContent: "center",
   cursor: "pointer",
   flexGrow: 1,
   background: "transparent",
   border: "1px solid $text",
-  borderRadius: "32px",
   padding: "$1",
   color: "$textMuted",
   fontFamily: "$body",
@@ -50,10 +49,14 @@ const StyledTrigger = styled(Tabs.Trigger, {
   },
   variants: {
     right: {
-      borderRadius: "32px 32px 0px 0px"
+      true: {
+        borderRadius: "0px 32px 32px 0px"
+      }
     },
     left: {
-      borderRadius: "32px 32px 0px 0px"
+      true: {
+        borderRadius: "32px 0px 0px 32px"
+      }
     }
   }
 });
@@ -98,7 +101,7 @@ export const ExistingMultisig = ({ contractAddress }: MultisigProps) => {
           <>
             <hr />
             <InnerContainer>
-              <Legend as="h2">Pending Transactions</Legend>
+              <InnerContainerTitle>PENDING TRANSACTIONS</InnerContainerTitle>
               <MultisigTransactionList multisigContract={multisigContract} transactions={multisig?.transactions} threshold={threshold} />
             </InnerContainer>
           </>
@@ -106,7 +109,7 @@ export const ExistingMultisig = ({ contractAddress }: MultisigProps) => {
 
         <hr />
         <InnerContainer>
-          <Legend as="h2">New Transaction</Legend>
+        <InnerContainerTitle>NEW TRANSACTION</InnerContainerTitle>
           <Tabs.Root defaultValue="tab1" orientation="vertical">
             <StyledTabs aria-label="tabs example">
               <StyledTrigger value="tab1" left>ERC-20 Transfer</StyledTrigger>

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useSnapshot } from "valtio";
 import { state } from "~/state";
 import { ClockCounterClockwise, RightArrow } from "./Icons";
-import InnerContainer from "./InnerContainer";
+import InnerContainer, { InnerContainerTitle } from "./InnerContainer";
 
 const Multisig = styled("div", {
   margin: "$4 0",
@@ -126,11 +126,11 @@ const ellipsis = "…"
 const MultisigList = () => {
   const { multisigs } = useSnapshot(state)
   return (
-    <InnerContainer css={{marginTop: "$6"}}>
-      <span style={{display: "flex", flexDirection: "row", alignItems: "center", gap: "0.5rem"}}><ClockCounterClockwise css={{stroke: "$text"}}/>VISITED MULTISIGS</span>
+    <InnerContainer css={{marginTop: "$6", gap: "0"}}>
+      <InnerContainerTitle><ClockCounterClockwise css={{stroke: "$text"}}/>VISITED MULTISIGS</InnerContainerTitle>
 
       {multisigs?.map((contract, index) => (
-        <Multisig key={`contractList-${contract.address}`} css={{margin: "0", padding: "$4 0", borderBottom: "1px $textMuted solid", borderTop: index===0 ? "1px $textMuted solid" : "0"}}>
+        <Multisig key={`contractList-${contract.address}`} css={{margin: "0", padding: "$4 0", borderBottom: "1px $textMuted solid"}}>
           <Link href={`/multisig/${contract.address}`} passHref><LinkWrapper><AddressPart left>{contract.address}<TextFade left /></AddressPart><AddressPart middle>{ellipsis}</AddressPart><AddressPart right>{contract.address}<TextFade right /></AddressPart><RightArrow css={{flexShrink: "0", stroke: "$text", height: "3rem", width: "3rem"}}/></LinkWrapper></Link>
         </Multisig>
       ))}

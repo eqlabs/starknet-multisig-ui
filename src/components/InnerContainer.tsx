@@ -1,4 +1,4 @@
-import { styled } from "@stitches/react"
+import { styled } from "@stitches/react";
 
 const InnerContainer = styled("div", {
   background: "$secondaryBackground",
@@ -7,6 +7,15 @@ const InnerContainer = styled("div", {
   flexDirection: "column",
   gap: "$6",
   borderRadius: "24px"
-})
+});
 
-export default InnerContainer
+export const InnerContainerTitle = styled("span", {
+  display: "flex",
+  flexDirection: "row",
+  alignItems: "center",
+  gap: "0.5rem",
+  paddingBottom: "$4",
+  borderBottom: "1px $textMuted solid"
+});
+
+export default InnerContainer;
