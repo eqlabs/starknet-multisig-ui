@@ -76,13 +76,22 @@ export const formatAmount = (
 
   let formatted;
   if (decimalIndex > 0 && decimalIndex < bnStr.length - 1) {
-    const left = bnStr.substring(0, decimalIndex);
-    const right = bnStr.substring(decimalIndex, bnStr.length);
-    formatted = [
-      left,
-      ".",
-      acc >= right.length ? right : right.substring(0, acc),
-    ].join("");
+    const left: string = bnStr.substring(0, decimalIndex);
+
+    // Trim trailing zeroes
+    let right: string = bnStr.substring(decimalIndex, bnStr.length);
+    while (right.endsWith("0")) {
+      right = right.substring(0, right.length - 1);
+    }
+
+    formatted =
+      right.length === 0
+        ? left
+        : [
+            left,
+            ".",
+            acc >= right.length ? right : right.substring(0, acc),
+          ].join("");
   } else {
     formatted = amount.toString();
   }
