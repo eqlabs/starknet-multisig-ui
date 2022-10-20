@@ -25,9 +25,9 @@ const fadeInAnimation = keyframes({
 const SkeletonLoader = styled("div", {
   position: "relative",
   display: "flex",
-  flex: 1,
+  flexShrink: 1,
+  flexGrow: 1,
   height: "100%",
-  width: "100%",
   minWidth: "150px",
   minHeight: "$4",
   my: "$1",

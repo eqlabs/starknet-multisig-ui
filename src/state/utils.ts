@@ -62,6 +62,7 @@ export const addMultisigTransaction = (
 
         // If transaction exists, update it, if not, append it to the multisig state
         if (foundTransactionIndex > -1) {
+          console.log("Found it! New info: ", multisigTransaction);
           multisig.transactions[foundTransactionIndex] = multisigTransaction;
         } else {
           multisig.transactions.push(multisigTransaction);
