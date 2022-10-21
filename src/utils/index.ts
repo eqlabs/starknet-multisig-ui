@@ -1,12 +1,14 @@
 import { InjectedConnector } from "@starknet-react/core";
-import { Contract, validateAndParseAddress } from "starknet";
+import { Abi, Contract, validateAndParseAddress } from "starknet";
+import { Uint256, uint256ToBN } from "starknet/dist/utils/uint256";
 import { BigNumberish, isHex, toBN, toHex } from "starknet/utils/number";
 import {
   ComparisonRange,
   MultisigTransaction,
   TransactionStatus,
 } from "~/types";
-import { voyagerBaseUrl } from "./config";
+import Source from "../../public/erc20.json";
+import { defaultProvider, voyagerBaseUrl } from "./config";
 
 export const shortStringFeltToStr = (felt: bigint): string => {
   const newStrB = Buffer.from(felt.toString(16), "hex");
@@ -189,4 +191,101 @@ export const parseMultisigTransaction = (
     threshold: rawMultisigTransaction.threshold,
   };
   return parsedTransaction;
+};
+
+export const fetchTokenSymbol = async (
+  targetAddress: string,
+  targetContract?: Contract
+) => {
+  let tokenSymbol = "";
+  try {
+    const contract =
+      targetContract ||
+      new Contract(Source.abi as Abi, targetAddress, defaultProvider);
+    const symbolResponse = await contract?.symbol();
+    tokenSymbol = shortStringFeltToStr(
+      toBN(filterNonFeltChars(symbolResponse.toString()))
+    );
+  } catch (e) {
+    console.error("Could not fetch token symbol: ", e);
+  }
+  return tokenSymbol;
+};
+
+export const fetchTokenDecimals = async (
+  targetAddress: string,
+  targetContract?: Contract
+) => {
+  let tokenDecimals = 18;
+  try {
+    const contract =
+      targetContract ||
+      new Contract(Source.abi as Abi, targetAddress, defaultProvider);
+    const decimalsResponse: { decimals: BigNumberish } =
+      await contract?.decimals();
+    if (decimalsResponse) {
+      tokenDecimals = decimalsResponse.decimals.toNumber();
+    }
+  } catch (e) {
+    console.error("Could not fetch token decimals: ", e);
+  }
+  return tokenDecimals;
+};
+
+export const fetchTokenBalance = async (
+  targetAddress: string,
+  userAddress: string,
+  decimals?: number,
+  targetContract?: Contract
+) => {
+  let tokenBalance = "";
+  let tokenDecimals: number | undefined = decimals;
+  try {
+    const contract =
+      targetContract ||
+      new Contract(Source.abi as Abi, targetAddress, defaultProvider);
+    const balanceResponse: { balance: Uint256 } = await contract?.balanceOf(
+      userAddress
+    );
+    if (balanceResponse) {
+      if (!tokenDecimals) {
+        tokenDecimals = await fetchTokenDecimals(targetAddress, contract);
+      }
+      tokenBalance = formatAmount(
+        uint256ToBN(balanceResponse.balance),
+        tokenDecimals
+      );
+    }
+  } catch (e) {
+    console.error("Could not fetch token balance: ", e);
+  }
+  return tokenBalance;
+};
+
+export const fetchTokenInfo = async (
+  targetAddress: string,
+  userAddress: string
+): Promise<{ symbol: string; balance: string; decimals: number }> => {
+  const targetContract = new Contract(
+    Source.abi as Abi,
+    targetAddress,
+    defaultProvider
+  );
+
+  let symbol = "";
+  let balance = "0";
+  let decimals = 18;
+
+  if (validateAndParseAddress(targetAddress)) {
+    symbol = await fetchTokenSymbol(targetAddress, targetContract);
+    decimals = await fetchTokenDecimals(targetAddress, targetContract);
+    balance = await fetchTokenBalance(
+      targetAddress,
+      userAddress,
+      decimals,
+      targetContract
+    );
+  }
+
+  return { symbol, balance, decimals };
 };

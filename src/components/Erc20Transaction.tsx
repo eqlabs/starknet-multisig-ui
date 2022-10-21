@@ -2,11 +2,11 @@ import { useContract } from "@starknet-react/core";
 import { useEffect, useState } from "react";
 import { Abi, Contract, validateAndParseAddress } from "starknet";
 import { getSelectorFromName } from "starknet/dist/utils/hash";
-import { bnToUint256, Uint256, uint256ToBN } from "starknet/dist/utils/uint256";
-import { BigNumberish, toBN } from "starknet/utils/number";
+import { bnToUint256 } from "starknet/dist/utils/uint256";
+import { toBN } from "starknet/utils/number";
 import { addMultisigTransaction } from "~/state/utils";
 import { MultisigTransaction } from "~/types";
-import { filterNonFeltChars, formatAmount, parseAmount, parseMultisigTransaction, shortStringFeltToStr } from "~/utils";
+import { fetchTokenInfo, parseAmount, parseMultisigTransaction } from "~/utils";
 import Source from "../../public/erc20.json";
 import Button from "./Button";
 import { Field, Fieldset, Label } from "./Forms";
@@ -48,31 +48,15 @@ const Erc20Transaction = ({multisigContract}: {multisigContract?: Contract}) => 
 
   const [tokenInfo, setTokenInfo] = useState<{symbol: string | undefined, balance: string | undefined, decimals: number | undefined} | undefined | null>();
   useEffect(() => {
-    const fetchTokenInfo = async () => {
-      let symbol, balance, decimals;
-      try {
-        if (validateAndParseAddress(targetAddress)) {
-          setTokenInfo(null);
-          const symbolResponse: string = await targetContract?.symbol();
-          const decimalsResponse: { decimals: BigNumberish } = await targetContract?.decimals();
-          const balanceResponse: { balance: Uint256 } = await targetContract?.balanceOf(multisigContract?.address);
-          if (symbolResponse) {
-            symbol = shortStringFeltToStr(toBN(filterNonFeltChars(symbolResponse.toString())));
-          }
-          if (decimalsResponse) {
-            decimals = decimalsResponse.decimals.toNumber();
-            if (balanceResponse) {
-              balance = formatAmount(uint256ToBN(balanceResponse.balance), decimals)
-            }
-          }
-        }
-      } catch (error) {
-        console.error(error);
+    const getTokenInfo = async () => {
+      if (multisigContract) {
+        setTokenInfo(null);
+        const tokenInfo = await fetchTokenInfo(targetAddress, multisigContract.address)
+        setTokenInfo(tokenInfo)
       }
-      setTokenInfo({ symbol, balance, decimals })
     }
-    fetchTokenInfo()
-  }, [multisigContract?.address, targetAddress, targetContract])
+    multisigContract && getTokenInfo()
+  }, [multisigContract, multisigContract?.address, targetAddress, targetContract])
 
   return (
     <Fieldset>

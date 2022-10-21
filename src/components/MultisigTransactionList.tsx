@@ -1,13 +1,13 @@
 import { useStarknet } from "@starknet-react/core";
 import { styled } from "@stitches/react";
 import throttle from "lodash/throttle";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Contract } from "starknet";
 import { uint256ToBN } from "starknet/dist/utils/uint256";
 import { toBN, toHex } from "starknet/utils/number";
 import { addMultisigTransaction, findTransaction } from "~/state/utils";
 import { MultisigTransaction, TransactionStatus } from "~/types";
-import { compareStatuses, formatAmount, getMultisigTransactionInfo, getVoyagerContractLink, truncateAddress } from "~/utils";
+import { compareStatuses, fetchTokenSymbol, formatAmount, getMultisigTransactionInfo, getVoyagerContractLink, truncateAddress } from "~/utils";
 import { StyledButton } from "./Button";
 import { PencilLine } from "./Icons";
 
@@ -114,6 +114,17 @@ const Transaction = ({ multisigContract, threshold, transaction }: TransactionPr
     };
   }, [activeDelay, idleDelay, multisigContract, provider, transaction])
 
+  const [tokenSymbol, setTokenSymbol] = useState<string>("");
+  useEffect(() => {
+    const getTokenSymbol = async () => {
+      if (multisigContract) {
+        const symbol = await fetchTokenSymbol(transaction.to)
+        setTokenSymbol(symbol)
+      }
+    }
+    multisigContract && getTokenSymbol()
+  }, [multisigContract, multisigContract?.address, transaction.to])
+
   const confirm = async (nonce: number) => {
     try {
       if (multisigContract) {
@@ -143,8 +154,8 @@ const Transaction = ({ multisigContract, threshold, transaction }: TransactionPr
 
     {transaction.function_selector === "transfer" &&
       <span>
-        {formatAmount(uint256ToBN({ low: transaction.calldata[1], high: transaction.calldata[2] }).toString(), 18)} TST to 
-        <a href={getVoyagerContractLink(toHex(toBN(transaction.calldata[0])))} rel="noreferrer noopener" target="_blank">{truncateAddress(toHex(toBN(transaction.calldata[0])))}</a>
+        {formatAmount(uint256ToBN({ low: transaction.calldata[1], high: transaction.calldata[2] }).toString(), 18)} {tokenSymbol} to 
+        {" "} <a href={getVoyagerContractLink(toHex(toBN(transaction.calldata[0])))} rel="noreferrer noopener" target="_blank">{truncateAddress(toHex(toBN(transaction.calldata[0])))}</a>
       </span>
     }
 
