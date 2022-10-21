@@ -49,3 +49,5 @@ export const pendingStatuses = [
 ];
 
 export type ComparisonRange = -1 | 0 | 1;
+
+export type NetworkName = "mainnet-alpha" | "goerli-alpha";
