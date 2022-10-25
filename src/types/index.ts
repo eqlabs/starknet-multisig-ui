@@ -12,6 +12,8 @@ export type TransactionInfo = {
 
 export type MultisigInfo = {
   address: string;
+  signers?: string[];
+  threshold?: number;
   transactionHash?: string;
   transactions: MultisigTransaction[];
 };

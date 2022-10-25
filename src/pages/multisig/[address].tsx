@@ -13,7 +13,7 @@ import { SSRProps } from "~/types";
 const Contract: NextPage<SSRProps> = ({ contractAddress }) => {
   const router = useRouter();
   const [validatedAddress, setValidatedAddress] = useState<string>();
-
+  
   useEffect(() => {
     try {
       const address = validateAndParseAddress(contractAddress);

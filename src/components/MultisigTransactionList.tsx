@@ -18,7 +18,7 @@ const TransactionWrapper = styled("li", {
   textIndent: "0",
   display: "flex",
   flexDirection: "row",
-  borderBottom: "1px $textMuted solid",
+  borderBottom: "1px $borderBottom solid",
   justifyContent: "space-between",
   alignItems: "center",
 })

@@ -1,5 +1,6 @@
 import { snapshot } from "valtio";
 import {
+  MultisigInfo,
   MultisigTransaction,
   TransactionInfo,
   TransactionStatus,
@@ -28,6 +29,15 @@ export const findMultisig = (address?: string) => {
     (contract) => contract.address === address
   );
   return multisig || null;
+};
+
+export const updateMultisigInfo = (multisigInfo: MultisigInfo) => {
+  state.multisigs = state.multisigs.map((contract) => {
+    if (multisigInfo.address.toLowerCase() === contract.address.toLowerCase()) {
+      contract = multisigInfo;
+    }
+    return contract;
+  });
 };
 
 export const findTransaction = (transactionHash?: string) => {

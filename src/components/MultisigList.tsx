@@ -2,7 +2,8 @@ import { styled } from "@stitches/react";
 import Link from "next/link";
 import { useSnapshot } from "valtio";
 import { state } from "~/state";
-import { ClockCounterClockwise, RightArrow } from "./Icons";
+import { truncateAddress } from "~/utils";
+import { ClockCounterClockwise, Hourglass, PencilLine, RightArrow, User } from "./Icons";
 import InnerContainer, { InnerContainerTitle } from "./InnerContainer";
 
 const Multisig = styled("div", {
@@ -11,7 +12,8 @@ const Multisig = styled("div", {
   position: "relative",
   display: "flex",
   flexDirection: "row",
-  justifyContent: "space-evenly",
+  justifyContent: "space-between",
+  gap: "$4",
   maxWidth: "100%",
   variants: {
     inactive: {
@@ -22,106 +24,29 @@ const Multisig = styled("div", {
   },
 });
 
-export const AddressPart = styled("span", {
-  variants: {
-    left: {
-      true: {
-        display: "flex",
-        position: "relative",
-        flexShrink: 1,
-        textAlign: "left",
-        justifyContent: "flex-start",
-        minWidth: 0,
-        overflow: "hidden",
-        "&::after": {
-          position: "absolute",
-          top: 0,
-          right: 0,
-          content: "",
-          width: "100%",
-          height: "100%",
-          zIndex: 2,
-        }
-      }
-    },
-    middle: {
-      true: {
-        display: "flex",
-        position: "relative",
-        flexShrink: 0,
-        maxWidth: "min-content",
-        width: "max-content",
-        textAlign: "center",
-        margin: "0 0.5em",
-        zIndex: 2,
-        textDecoration: "none !important"
-      }
-    },
-    right: {
-      true: {
-        display: "flex",
-        position: "relative",
-        flexShrink: 1,
-        textAlign: "right",
-        justifyContent: "flex-end",
-        minWidth: 0,
-        overflow: "hidden",
-        "&::after": {
-          position: "absolute",
-          top: 0,
-          right: 0,
-          content: "",
-          width: "100%",
-          height: "100%",
-          zIndex: 2,
-        }
-      }
-    }
-  },
+export const Address = styled("span", {
+  fontFamily: "$monospace",
 })
 
-const TextFade = styled("div", {
-  variants: {
-    left: {
-      true: {
-        display: "flex",
-        position: "absolute",
-        zIndex: 3,
-        width: "12rem",
-        maxWidth: "100%",
-        height: "100%",
-        right: 0,
-        background: "linear-gradient(to left, $secondaryBackground 0%, transparent 100%);"
-      }
-    },
-    right: {
-      true: {
-        display: "flex",
-        position: "absolute",
-        zIndex: 3,
-        width: "12rem",
-        maxWidth: "100%",
-        height: "100%",
-        left: 0,
-        background: "linear-gradient(to right, $secondaryBackground 0%, transparent 100%);"
-      }
-    }
-  },
+export const ContractInfo = styled("span", {
+  display: "flex",
+  flexDirection: "row",
+  alignItems: "center",
+  color: "$textMuted",
+  gap: "0.5rem",
 })
 
 const LinkWrapper = styled("div", {
   position: "relative",
   display: "flex",
   flexDirection: "row",
-  justifyContent: "space-evenly",
-  maxWidth: "100%",
+  justifyContent: "space-between",
+  width: "100%",
   cursor: "pointer",
   "&:hover > span": {
     textDecoration: "underline"
   },
 })
-
-const ellipsis = "…"
 
 const MultisigList = () => {
   const { multisigs } = useSnapshot(state)
@@ -130,8 +55,18 @@ const MultisigList = () => {
       <InnerContainerTitle><ClockCounterClockwise css={{stroke: "$text"}}/>VISITED MULTISIGS</InnerContainerTitle>
 
       {multisigs?.map((contract, index) => (
-        <Multisig key={`contractList-${contract.address}`} css={{margin: "0", padding: "$4 0", borderBottom: "1px $textMuted solid"}}>
-          <Link href={`/multisig/${contract.address}`} passHref><LinkWrapper><AddressPart left>{contract.address}<TextFade left /></AddressPart><AddressPart middle>{ellipsis}</AddressPart><AddressPart right>{contract.address}<TextFade right /></AddressPart><RightArrow css={{flexShrink: "0", stroke: "$text", height: "3rem", width: "3rem"}}/></LinkWrapper></Link>
+        <Multisig key={`contractList-${contract.address}`} css={{margin: "0", padding: "$4 0", borderBottom: "1px $borderColor solid"}}>
+          <Link href={`/multisig/${contract.address}`} passHref>
+            <LinkWrapper>
+              <Address>{truncateAddress(contract.address, 14)}</Address>
+              <div style={{ display: "flex", flexDirection: "row", gap: "1rem", alignItems: "center" }}>
+                <ContractInfo>{contract.signers?.length}<User css={{ stroke: "$textMuted" }}/></ContractInfo>
+                <ContractInfo>{contract.threshold}<PencilLine css={{ stroke: "$textMuted" }}/></ContractInfo>
+                <ContractInfo>{contract.transactions.length}<Hourglass css={{ stroke: "$textMuted" }} width="16" height="17"/></ContractInfo>
+                <RightArrow css={{flexShrink: "0", stroke: "$text", height: "3rem", width: "3rem"}}/>
+              </div>
+            </LinkWrapper>
+          </Link>
         </Multisig>
       ))}
     </InnerContainer>

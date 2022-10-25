@@ -44,7 +44,9 @@ export const {
       backgroundGradient:
         "linear-gradient(360deg, #E6CCA6 -1.58%, #7A6B82 43.83%, #011A38 95.82%)",
       text: "#050C51",
-      textMuted: "rgba(5, 12, 81, 0.2)",
+      textMuted: "rgba(5, 12, 81, 0.6)",
+      strongBorderColor: "rgba(5, 12, 81, 0.51)",
+      borderColor: "rgba(5, 12, 81, 0.15)",
       error: "#DA2AA9",
       warning: "$amber11",
       success: "#1AAD55",
@@ -362,7 +364,9 @@ export const darkTheme = createTheme("dark", {
     secondaryBackground: "rgba(41, 47, 98, 0.31)",
     backgroundGradient: "linear-gradient(180deg, #020112 0%, #000958 100%)",
     text: "#FFFFFF",
-    textMuted: "rgba(182, 184, 198, 0.2)",
+    textMuted: "rgba(255, 255, 255, 0.6)",
+    strongBorderColor: "rgba(255, 255, 255, 0.51)",
+    borderColor: "rgba(255, 255, 255, 0.15)",
     txBg: "#464FA587",
     transferBg: "#2B859987",
     error: "#EA49BD",
@@ -413,7 +417,7 @@ export const globalStyles = globalCss({
   },
   hr: {
     border: 0,
-    borderTop: "1px solid $textMuted",
+    borderTop: "1px solid $strongBorderColor",
     margin: "$5 0 $5 0",
   },
   "h1, h2, h3, h4, h5": {

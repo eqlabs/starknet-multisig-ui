@@ -15,7 +15,7 @@ export const InnerContainerTitle = styled("span", {
   alignItems: "center",
   gap: "0.5rem",
   paddingBottom: "$4",
-  borderBottom: "1px $textMuted solid"
+  borderBottom: "1px $borderColor solid"
 });
 
 export default InnerContainer;

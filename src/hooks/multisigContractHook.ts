@@ -4,7 +4,11 @@ import { useEffect, useMemo, useState } from "react";
 import { Abi, Contract, validateAndParseAddress } from "starknet";
 import { sanitizeHex } from "starknet/dist/utils/encode";
 import { toBN, toHex } from "starknet/dist/utils/number";
-import { addMultisigTransaction, findMultisig } from "~/state/utils";
+import {
+  addMultisigTransaction,
+  findMultisig,
+  updateMultisigInfo,
+} from "~/state/utils";
 import { pendingStatuses, TransactionStatus } from "~/types";
 import { compareStatuses, getMultisigTransactionInfo } from "~/utils";
 import Source from "../../public/Multisig.json";
@@ -147,6 +151,13 @@ export const useMultisigContract = (
                 threshold: toBN(0),
               };
 
+              if (cachedMultisig) {
+                updateMultisigInfo({
+                  ...cachedMultisig,
+                  signers: signers,
+                  threshold: threshold.toNumber(),
+                });
+              }
               setSigners(signers.map(validateAndParseAddress));
               setThreshold(threshold.toNumber());
             } catch (e) {
@@ -155,7 +166,7 @@ export const useMultisigContract = (
             setLoading(false);
           }, 5000)
         : () => {},
-    [contract, status.value]
+    [cachedMultisig, contract, status.value]
   );
 
   // Basic info fetcher

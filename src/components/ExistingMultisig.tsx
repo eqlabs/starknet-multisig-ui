@@ -126,8 +126,8 @@ export const ExistingMultisig = ({ contractAddress }: MultisigProps) => {
         <InnerContainerTitle><SquareArrow css={{stroke: "$text"}}/>NEW TRANSACTION</InnerContainerTitle>
           <Tabs.Root defaultValue="tab1" orientation="vertical">
             <StyledTabs aria-label="tabs example">
-              <StyledTrigger value="tab1" left>ERC-20 Transfer</StyledTrigger>
-              <StyledTrigger value="tab2" right>Custom Transaction</StyledTrigger>
+              <StyledTrigger value="tab1" left>ERC-20 TRANSFER</StyledTrigger>
+              <StyledTrigger value="tab2" right>CUSTOM TRANSACTION</StyledTrigger>
             </StyledTabs>
             
             <Tabs.Content value="tab1">
