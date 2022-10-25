@@ -126,17 +126,21 @@ export const parseAmount = (amount: string, decimals: number): BigNumberish => {
   return toBN(parsed);
 };
 
-export const truncateAddress = (address: string): string => {
+export const truncateAddress = (
+  address: string,
+  substringLength?: number
+): string => {
   let validatedAddress = address;
+  let substrLength = substringLength || 4;
   try {
     validatedAddress = validateAndParseAddress(address);
   } catch (_e) {
     console.warn(_e);
   }
   return [
-    validatedAddress.substring(0, 4),
+    validatedAddress.substring(0, substrLength),
     validatedAddress.substring(
-      validatedAddress.length - 4,
+      validatedAddress.length - substrLength,
       validatedAddress.length
     ),
   ].join("…");
