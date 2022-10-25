@@ -41,7 +41,8 @@ export const updateMultisigInfo = (multisigInfo: MultisigInfo) => {
 };
 
 export const findTransaction = (transactionHash?: string) => {
-  const transaction = state.transactions?.find(
+  const { transactions } = snapshot(state);
+  const transaction = transactions?.find(
     (transaction) => transaction.hash === transactionHash
   );
   return transaction || null;

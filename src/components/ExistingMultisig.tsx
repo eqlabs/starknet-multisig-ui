@@ -73,7 +73,7 @@ const ContractInfo = styled("div", {
 
 export const ExistingMultisig = ({ contractAddress }: MultisigProps) => {
   const { account } = useStarknet();
-  const { contract: multisigContract, status, loading, signers, threshold } = useMultisigContract(
+  const { contract: multisigContract, status, loading } = useMultisigContract(
     contractAddress, 20000
   );
   
@@ -107,16 +107,16 @@ export const ExistingMultisig = ({ contractAddress }: MultisigProps) => {
 
         <ContractInfo><Note css={{stroke: "$text"}}/><Link href={contractLink}>{contractAddress}</Link></ContractInfo>
 
-        <ContractInfo><PencilLine css={{stroke: "$text"}}/>{loading ? <SkeletonLoader /> : "Required signers: " + threshold + "/" + signers.length}</ContractInfo>
+        <ContractInfo><PencilLine css={{stroke: "$text"}}/>{loading ? <SkeletonLoader /> : "Required signers: " + multisig?.threshold + "/" + multisig?.signers?.length}</ContractInfo>
 
-        <ContractInfo><User css={{stroke: "$text"}}/>{loading ? <SkeletonLoader /> : account && signers.includes(validateAndParseAddress(account)) ? "You are a signer of this multisig contract." : "You cannot sign transactions in this multisig contract."}</ContractInfo>
+        <ContractInfo><User css={{stroke: "$text"}}/>{loading ? <SkeletonLoader /> : account && multisig?.signers?.includes(validateAndParseAddress(account)) ? "You are a signer of this multisig contract." : "You cannot sign transactions in this multisig contract."}</ContractInfo>
 
         {multisig?.transactions && multisig.transactions.filter(tx => !tx.executed).length > 0 && (
           <>
             <hr />
             <InnerContainer css={{gap: "0"}}>
               <InnerContainerTitle><Hourglass css={{stroke: "$text"}}/>PENDING TRANSACTIONS</InnerContainerTitle>
-              <MultisigTransactionList multisigContract={multisigContract} transactions={multisig?.transactions} threshold={threshold} />
+              <MultisigTransactionList multisigContract={multisigContract} transactions={multisig?.transactions} threshold={multisig?.threshold || 0} />
             </InnerContainer>
           </>
         )}

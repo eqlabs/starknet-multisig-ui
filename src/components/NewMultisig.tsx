@@ -12,13 +12,8 @@ import { Input, Select } from "~/components/Input";
 import Paragraph from "~/components/Paragraph";
 import { useContractFactory } from "~/hooks/deploy";
 import MultisigSource from "../../public/Multisig.json";
-import { styled } from "../../stitches.config";
 import { Field, Fieldset, Label, Legend } from "./Forms";
 import InnerContainer from "./InnerContainer";
-
-const Threshold = styled("div", {
-  padding: "0 0 $4",
-});
 
 export function NewMultisig() {
   const { account } = useStarknet();
@@ -107,7 +102,7 @@ export function NewMultisig() {
   return (
     <div>
       {!deploying ? 
-      <Fieldset>
+      <Fieldset css={{gap: "0"}}>
         <Legend as="h2">Create a new multisig</Legend>
         <hr/>
         <Paragraph>

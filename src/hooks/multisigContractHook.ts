@@ -21,8 +21,6 @@ export const useMultisigContract = (
   contract: Contract | undefined;
   status: TransactionStatus;
   loading: boolean;
-  signers: string[];
-  threshold: number;
   transactionCount: number;
 } => {
   const pollingInterval = polling || 20000;
@@ -189,11 +187,18 @@ export const useMultisigContract = (
                 let currentTransactionIndex = transactionCount - 1;
 
                 while (currentTransactionIndex >= 0) {
-                  const parsedTransaction = await getMultisigTransactionInfo(
-                    contract,
-                    currentTransactionIndex
-                  );
-                  addMultisigTransaction(address, parsedTransaction);
+                  if (
+                    !cachedMultisig?.transactions.find(
+                      (tx) =>
+                        tx.nonce === currentTransactionIndex && tx.executed
+                    )
+                  ) {
+                    const parsedTransaction = await getMultisigTransactionInfo(
+                      contract,
+                      currentTransactionIndex
+                    );
+                    addMultisigTransaction(address, parsedTransaction);
+                  }
                   currentTransactionIndex -= 1;
                 }
               } catch (error) {
@@ -219,8 +224,6 @@ export const useMultisigContract = (
     contract,
     status: status.value as TransactionStatus,
     loading,
-    signers,
-    threshold,
     transactionCount,
   };
 };

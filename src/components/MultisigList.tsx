@@ -60,9 +60,9 @@ const MultisigList = () => {
             <LinkWrapper>
               <Address>{truncateAddress(contract.address, 14)}</Address>
               <div style={{ display: "flex", flexDirection: "row", gap: "1rem", alignItems: "center" }}>
-                <ContractInfo>{contract.signers?.length}<User css={{ stroke: "$textMuted" }}/></ContractInfo>
-                <ContractInfo>{contract.threshold}<PencilLine css={{ stroke: "$textMuted" }}/></ContractInfo>
-                <ContractInfo>{contract.transactions.length}<Hourglass css={{ stroke: "$textMuted" }} width="16" height="17"/></ContractInfo>
+                <ContractInfo title={`This multisig has ${contract.signers?.length} approved signers.`}>{contract.signers?.length}<User css={{ stroke: "$textMuted" }}/></ContractInfo>
+                <ContractInfo title={`This multisig needs ${contract.threshold} signatures to execute a transaction.`}>{contract.threshold}<PencilLine css={{ stroke: "$textMuted" }}/></ContractInfo>
+                <ContractInfo title={`This multisig has ${contract.transactions.filter(tx => !tx.executed).length} pending transactions.`}>{contract.transactions.filter(tx => !tx.executed).length}<Hourglass css={{ stroke: "$textMuted" }} width="16" height="17"/></ContractInfo>
                 <RightArrow css={{flexShrink: "0", stroke: "$text", height: "3rem", width: "3rem"}}/>
               </div>
             </LinkWrapper>
