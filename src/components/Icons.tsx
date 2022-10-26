@@ -73,3 +73,9 @@ export const User = ({css, width="16", height="17", viewBox="0 0 16 17"}: IconPr
     <Path d="M1.93677 13.9994C2.55149 12.9354 3.4354 12.0519 4.49969 11.4376C5.56399 10.8234 6.77119 10.5 8.00003 10.5C9.22886 10.5 10.4361 10.8234 11.5003 11.4377C12.5646 12.052 13.4485 12.9355 14.0632 13.9995" css={css} strokeLinecap="round" strokeLinejoin="round"/>
   </svg>
 )
+
+export const Caret = ({css, width="17", height="10", viewBox="0 0 17 10"}: IconProps) => (
+  <svg width={width} height={height} viewBox={viewBox} fill="none" xmlns="http://www.w3.org/2000/svg">
+    <Path d="M1 1L8.5 8L16 1" css={css}/>
+  </svg>
+)
