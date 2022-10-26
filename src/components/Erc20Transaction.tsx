@@ -49,7 +49,7 @@ const Erc20Transaction = ({multisigContract}: {multisigContract?: Contract}) => 
   const [tokenInfo, setTokenInfo] = useState<{symbol: string | undefined, balance: string | undefined, decimals: number | undefined} | undefined | null>();
   useEffect(() => {
     const getTokenInfo = async () => {
-      if (multisigContract) {
+      if (multisigContract && targetAddress !== "") {
         setTokenInfo(null);
         const tokenInfo = await fetchTokenInfo(targetAddress, multisigContract.address)
         setTokenInfo(tokenInfo)
