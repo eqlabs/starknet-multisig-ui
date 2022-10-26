@@ -25,7 +25,7 @@ export const ConnectWallet = () => {
   };
 
   useEffect(() => {
-    if (pendingWallet && account) {
+    if (pendingWallet) {
       state.walletInfo = { id: pendingWallet.id(), address: account }
     }
   }, [account, pendingWallet, router]);

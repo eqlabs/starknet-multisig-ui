@@ -2,7 +2,7 @@ import Box from "~/components/Box";
 import { Horizontal as HorizontalLogo } from "~/components/Logos";
 import ThemeChanger from "~/components/ThemeChanger";
 import Breadcrumb from "./Breadcrumb";
-import { DisconnectWallet } from "./DisconnectWallet";
+import WalletDropdown from "./WalletDropdown";
 
 const Header: React.FC = () => {
   return (
@@ -21,7 +21,7 @@ const Header: React.FC = () => {
         </div>
         <Breadcrumb />
       </Box>
-      <DisconnectWallet />
+      <WalletDropdown />
       <ThemeChanger />
     </Box>
   );
