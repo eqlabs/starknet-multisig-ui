@@ -16,10 +16,19 @@ const Trigger = styled(DropdownMenu.Trigger, {
   borderRadius: "35px",
   border: "0",
   whiteSpace: "nowrap",
-  padding: "0.5rem 1rem",
+  padding: "$2 $4",
   background: "rgba(255, 255, 255, 0.08)",
   color: "rgba(255, 255, 255, 0.51)",
-  cursor: "pointer"
+  cursor: "pointer",
+  gap: "$2",
+  ".caret": {
+    transition: "transform 0.1s ease",
+  },
+  '&[data-state="open"]': {
+    ".caret": {
+      transform: "scaleY(-1)",
+    }
+  }
 })
 
 const Content = styled(DropdownMenu.Content, {
@@ -46,7 +55,7 @@ const WalletDropdown = () => {
         {/* TODO: Map the used wallet type to a corresponding wallet icon */}
         <Trigger>
           <span>{truncateAddress(account, 12)}</span>
-          <Caret css={{stroke: "#FFFFFF", strokeWidth: "2px" }} />
+          <Caret className="caret" css={{stroke: "#FFFFFF", strokeWidth: "2px" }} height="17"/>
         </Trigger>
         <DropdownMenu.Portal>
           <Content>
