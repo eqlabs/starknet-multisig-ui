@@ -4,9 +4,9 @@ import { Abi, Contract, validateAndParseAddress } from "starknet";
 import { getSelectorFromName } from "starknet/dist/utils/hash";
 import { bnToUint256 } from "starknet/dist/utils/uint256";
 import { toBN } from "starknet/utils/number";
-import { addMultisigTransaction } from "~/state/utils";
+import { addMultisigTransaction, getTokenInfo } from "~/state/utils";
 import { MultisigTransaction } from "~/types";
-import { fetchTokenInfo, parseAmount, parseMultisigTransaction } from "~/utils";
+import { fetchTokenBalance, parseAmount, parseMultisigTransaction } from "~/utils";
 import Source from "../../public/erc20.json";
 import Button from "./Button";
 import { Field, Fieldset, Label } from "./Forms";
@@ -48,14 +48,17 @@ const Erc20Transaction = ({multisigContract}: {multisigContract?: Contract}) => 
 
   const [tokenInfo, setTokenInfo] = useState<{symbol: string | undefined, balance: string | undefined, decimals: number | undefined} | undefined | null>();
   useEffect(() => {
-    const getTokenInfo = async () => {
+    const getToken = async () => {
       if (multisigContract && targetAddress !== "") {
         setTokenInfo(null);
-        const tokenInfo = await fetchTokenInfo(targetAddress, multisigContract.address)
-        setTokenInfo(tokenInfo)
+        const tokenInfo = await getTokenInfo(targetAddress);
+        if (tokenInfo) {
+          const tokenBalance = await fetchTokenBalance(targetAddress, multisigContract.address);
+          setTokenInfo({ ...tokenInfo, balance: tokenBalance })
+        }
       }
     }
-    multisigContract && getTokenInfo()
+    multisigContract && getToken()
   }, [multisigContract, multisigContract?.address, targetAddress, targetContract])
 
   return (

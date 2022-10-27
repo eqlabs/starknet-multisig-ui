@@ -1,11 +1,16 @@
+import { Abi, Contract, validateAndParseAddress } from "starknet";
 import { snapshot } from "valtio";
 import {
   MultisigInfo,
   MultisigTransaction,
+  TokenInfo,
   TransactionInfo,
   TransactionStatus,
 } from "~/types";
+import { fetchTokenDecimals, fetchTokenSymbol } from "~/utils";
+import { defaultProvider } from "~/utils/config";
 import { state } from ".";
+import ERC20Source from "../../public/erc20.json";
 
 export const updateTransactionStatus = (
   hash: string,
@@ -85,4 +90,37 @@ export const addMultisigTransaction = (
   } catch (_e) {
     console.error(_e);
   }
+};
+
+export const getTokenInfo = async (
+  tokenAddress: string
+): Promise<TokenInfo | null> => {
+  const { tokenInfo } = snapshot(state);
+  const validatedAddress = validateAndParseAddress(tokenAddress);
+  let returnedTokenInfo = tokenInfo ? tokenInfo[validatedAddress] : null;
+  if (validatedAddress && returnedTokenInfo) {
+    if (!returnedTokenInfo) {
+      try {
+        const targetContract = new Contract(
+          ERC20Source.abi as Abi,
+          tokenAddress,
+          defaultProvider
+        );
+
+        if (validateAndParseAddress(tokenAddress)) {
+          const symbol = await fetchTokenSymbol(tokenAddress, targetContract);
+          const decimals = await fetchTokenDecimals(
+            tokenAddress,
+            targetContract
+          );
+
+          state.tokenInfo[validatedAddress] = { symbol, decimals };
+          returnedTokenInfo = { symbol, decimals };
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  }
+  return returnedTokenInfo;
 };
