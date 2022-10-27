@@ -28,7 +28,7 @@ export const useMultisigContract = (
   const { library: provider } = useStarknet();
 
   const [status, send] = useTransactionStatus();
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const [signers, setSigners] = useState<string[]>([]);
   const [threshold, setThreshold] = useState<number>(0);
@@ -138,7 +138,7 @@ export const useMultisigContract = (
       status.value &&
       !pendingStatuses.includes(status.value as TransactionStatus)
         ? throttle(async () => {
-            setLoading(true);
+            !cachedMultisig && setLoading(true);
             try {
               const { signers: signersResponse } =
                 (await contract?.get_signers()) || {
@@ -154,6 +154,13 @@ export const useMultisigContract = (
                   ...cachedMultisig,
                   signers: signers,
                   threshold: threshold.toNumber(),
+                });
+              } else {
+                updateMultisigInfo({
+                  address: validatedAddress,
+                  signers: signers,
+                  threshold: threshold.toNumber(),
+                  transactions: [],
                 });
               }
               setSigners(signers.map(validateAndParseAddress));
