@@ -170,7 +170,7 @@ export const getMultisigTransactionInfo = async (
     calldata: calldata.toString().split(","),
     calldata_len: transaction.calldata_len.toNumber(),
     executed: transaction.executed.toNumber() === 1,
-    threshold: transaction.threshold.toNumber(),
+    confirmations: transaction.confirmations.toNumber(),
   };
 
   return formattedTransaction;
@@ -192,7 +192,7 @@ export const parseMultisigTransaction = (
     ),
     calldata_len: rawMultisigTransaction.callData.length,
     executed: rawMultisigTransaction.executed,
-    threshold: rawMultisigTransaction.threshold,
+    confirmations: rawMultisigTransaction.confirmations,
   };
   return parsedTransaction;
 };

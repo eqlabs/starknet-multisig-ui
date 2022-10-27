@@ -23,6 +23,11 @@ export type WalletInfo = {
   address?: string;
 };
 
+export type TokenInfo = {
+  symbol: string;
+  decimals: number;
+};
+
 export type MultisigTransaction = {
   nonce: number;
   to: string;
@@ -30,7 +35,7 @@ export type MultisigTransaction = {
   calldata_len: number;
   calldata: string[];
   executed: boolean;
-  threshold: number;
+  confirmations: number;
   latestTransactionHash?: string;
 };
 

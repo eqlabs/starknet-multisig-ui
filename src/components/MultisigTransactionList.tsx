@@ -5,9 +5,9 @@ import { useCallback, useEffect, useState } from "react";
 import { Contract } from "starknet";
 import { uint256ToBN } from "starknet/dist/utils/uint256";
 import { toBN, toHex } from "starknet/utils/number";
-import { addMultisigTransaction, findTransaction } from "~/state/utils";
+import { addMultisigTransaction, findTransaction, getTokenInfo } from "~/state/utils";
 import { MultisigTransaction, TransactionStatus } from "~/types";
-import { compareStatuses, fetchTokenSymbol, formatAmount, getMultisigTransactionInfo, getVoyagerContractLink, truncateAddress } from "~/utils";
+import { compareStatuses, formatAmount, getMultisigTransactionInfo, getVoyagerContractLink, truncateAddress } from "~/utils";
 import { StyledButton } from "./Button";
 import { PencilLine } from "./Icons";
 
@@ -100,9 +100,9 @@ const Transaction = ({ multisigContract, threshold, transaction }: TransactionPr
         addMultisigTransaction(multisigContract.address, info);
       }
     }, activeDelay / 2);
-
+    
     // If the latest transaction is already finalized, no need to poll for it
-    if (compareStatuses(cachedTransaction?.status || TransactionStatus.NOT_RECEIVED, TransactionStatus.ACCEPTED_ON_L2) < 0) {
+    if (cachedTransaction && compareStatuses(cachedTransaction?.status, TransactionStatus.ACCEPTED_ON_L2) < 0) {
       getLatestStatus();
       heartbeat = setInterval(getLatestStatus, activeDelay);
     } else if (multisigContract) {
@@ -118,8 +118,8 @@ const Transaction = ({ multisigContract, threshold, transaction }: TransactionPr
   useEffect(() => {
     const getTokenSymbol = async () => {
       if (multisigContract) {
-        const symbol = await fetchTokenSymbol(transaction.to)
-        setTokenSymbol(symbol)
+        const tokenInfo = await getTokenInfo(transaction.to)
+        tokenInfo && setTokenSymbol(tokenInfo.symbol)
       }
     }
     multisigContract && getTokenSymbol()
@@ -160,9 +160,9 @@ const Transaction = ({ multisigContract, threshold, transaction }: TransactionPr
     }
 
     <div style={{display: "flex", flexDirection: "row", alignItems: "center"}}>
-      <Signatures approved={transaction.threshold === threshold}><PencilLine css={{stroke: "$textMuted"}}/>{transaction.threshold + "/" + threshold}</Signatures>
+      <Signatures approved={transaction.confirmations === threshold}><PencilLine css={{stroke: "$textMuted"}}/>{transaction.confirmations + "/" + threshold}</Signatures>
       <div>
-        {transaction.threshold < threshold ? <StyledButton disabled={!getInteractionReadiness()} size="sm" onClick={() => confirm(transaction.nonce)}>Confirm</StyledButton> : <StyledButton disabled={!getInteractionReadiness() && transaction.threshold < threshold} size="sm" onClick={() => execute(transaction.nonce)}>Execute</StyledButton>
+        {transaction.confirmations < threshold ? <StyledButton disabled={!getInteractionReadiness()} size="sm" onClick={() => confirm(transaction.nonce)}>Confirm</StyledButton> : <StyledButton disabled={!getInteractionReadiness() && transaction.confirmations < threshold} size="sm" onClick={() => execute(transaction.nonce)}>Execute</StyledButton>
         }
       </div>
     </div>
