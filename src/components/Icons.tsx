@@ -1,16 +1,9 @@
-import { CSS, styled } from "@stitches/react";
+import { styled } from "@stitches/react";
+import { IconProps } from "~/types";
 
 const Path = styled("path", {
   stroke: "$buttonText",
 });
-
-type IconProps = {
-  width?: string;
-  height?: string;
-  viewBox?: string;
-  css?: CSS;
-  className?: string;
-}
 
 export const RightArrow = ({css, width="21", height="20", viewBox="0 0 25 24", className}: IconProps) => (
   <svg className={`icon${className ? " " + className : ""}`} width={width} height={height} viewBox={viewBox} fill="none" xmlns="http://www.w3.org/2000/svg">

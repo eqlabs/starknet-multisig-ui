@@ -179,7 +179,7 @@ const CustomButton: React.FC<
   <StyledButton {...rest} ref={ref} as={as}>
     <Box
       as="span"
-      css={{ gap: "$2", alignItems: "center" }}
+      css={{ display: "flex", flexDirection: "row", gap: "$2", alignItems: "center" }}
       className="button-content"
     >
       {children}

@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import Button from "~/components/Button";
 import Paragraph from "~/components/Paragraph";
 import { state } from "~/state";
-import { mapWalletIdToText } from "~/utils";
+import { mapWalletIdToIcon, mapWalletToText } from "~/utils";
 
 const WelcomeTitle = styled("h1", { fontSize: "$6xl", marginBottom: "$1" });
 const Subtitle = styled("h2", { fontSize: "$2xl", marginTop: "0", fontWeight: "normal" });
@@ -45,14 +45,14 @@ export const ConnectWallet = () => {
 
           <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
           {getInstalledInjectedConnectors().map(wallet => (
-            <Button size="md" key={wallet.id()} fullWidth style={{background: "#EFF4FB", color: "#000000"}} onClick={() => connectCallback(wallet)}>
-              Connect wallet ({mapWalletIdToText(wallet)})
+            <Button size="md" key={wallet.id()} fullWidth style={{background: "#EFF4FB", color: "#000000", whiteSpace: "nowrap"}} onClick={() => connectCallback(wallet)}>
+              {mapWalletIdToIcon(wallet.id())} <span>Connect wallet ({mapWalletToText(wallet)})</span>
             </Button>
           ))}
           </div>
         </div>
       </>) : (<Paragraph css={{ fontSize: "$lg", margin: "$6 0", color: "#FFFFFF" }}>
-        Unlock your {mapWalletIdToText(pendingWallet)} wallet.
+        Unlock your {mapWalletToText(pendingWallet)} wallet.
       </Paragraph>)}
     </FrontPageWrapper>
   );

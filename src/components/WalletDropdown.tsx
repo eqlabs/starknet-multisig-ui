@@ -5,7 +5,7 @@ import { useRouter } from "next/router";
 import { useCallback } from "react";
 import { useSnapshot } from 'valtio';
 import { state } from "~/state";
-import { truncateAddress } from '~/utils';
+import { mapWalletIdToIcon, truncateAddress } from '~/utils';
 import Button from "./Button";
 import { Caret } from './Icons';
 
@@ -54,6 +54,7 @@ const WalletDropdown = () => {
       <DropdownMenu.Root>
         {/* TODO: Map the used wallet type to a corresponding wallet icon */}
         <Trigger>
+          <div>{mapWalletIdToIcon(walletInfo && walletInfo.id ? walletInfo.id : "0")}</div>
           <span>{truncateAddress(account, 12)}</span>
           <Caret className="caret" css={{stroke: "#FFFFFF", strokeWidth: "2px" }} height="17"/>
         </Trigger>

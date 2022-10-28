@@ -1,11 +1,13 @@
 import { InjectedConnector } from "@starknet-react/core";
+import { CSS } from "@stitches/react";
 import { Abi, Contract, validateAndParseAddress } from "starknet";
 import { Uint256, uint256ToBN } from "starknet/dist/utils/uint256";
 import { BigNumberish, isHex, toBN, toHex } from "starknet/utils/number";
+import { ArgentX, Braavos } from "~/components/Logos";
 import {
   ComparisonRange,
   MultisigTransaction,
-  TransactionStatus,
+  TransactionStatus
 } from "~/types";
 import Source from "../../public/erc20.json";
 import { defaultProvider, voyagerBaseUrl } from "./config";
@@ -31,7 +33,7 @@ export const mapTargetHashToText = (hash: string): string => {
   return mapping;
 };
 
-export const mapWalletIdToText = (wallet: InjectedConnector): string => {
+export const mapWalletToText = (wallet: InjectedConnector): string => {
   let walletName = "";
   switch (wallet.id()) {
     case "argent-x": {
@@ -47,6 +49,27 @@ export const mapWalletIdToText = (wallet: InjectedConnector): string => {
     }
   }
   return walletName;
+};
+
+export const mapWalletIdToIcon = (
+  walletId: string,
+  css?: CSS,
+): JSX.Element | undefined => {
+  let icon: JSX.Element | undefined;
+  switch (walletId) {
+    case "argent-x": {
+      icon = <ArgentX css={css} />;
+      break;
+    }
+    case "braavos": {
+      icon = <Braavos css={css} />;
+      break;
+    }
+    default: {
+      icon = <ArgentX css={css} />;
+    }
+  }
+  return icon;
 };
 
 export const compareStatuses = (

@@ -1,8 +1,17 @@
+import type { CSS } from "@stitches/react";
 import { ReactNode } from "react";
 
 export type SSRProps = {
   children?: ReactNode;
   contractAddress: string;
+};
+
+export type IconProps = {
+  width?: string;
+  height?: string;
+  viewBox?: string;
+  css?: CSS;
+  className?: string;
 };
 
 export type TransactionInfo = {
