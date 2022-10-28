@@ -72,8 +72,8 @@ export const useTransaction = (
       if (transactionHash && transactionHash !== "") {
         let tx_status;
 
-        const response = await provider.getTransactionStatus(transactionHash);
-        tx_status = response.tx_status as TransactionStatus;
+        const response = await provider.getTransactionReceipt(transactionHash);
+        tx_status = response.status as TransactionStatus;
         if (compareStatuses(tx_status, TransactionStatus.ACCEPTED_ON_L1) >= 0) {
           heartbeat && clearInterval(heartbeat);
         }
