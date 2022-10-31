@@ -54,6 +54,7 @@ export function useContractFactory({
         state.multisigs.push({
           address: validateAndParseAddress(contract.address),
           transactionHash: contract.deployTransactionHash,
+          transactions: [],
         });
         setContract(contract);
         return contract;
