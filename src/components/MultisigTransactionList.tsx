@@ -76,7 +76,6 @@ const Transaction = ({ multisigContract, threshold, transaction }: TransactionPr
     const cachedTransaction = findTransaction(transaction.latestTransactionHash);
 
     const getLatestStatus = async () => {
-      console.log("Gulli-kellot soi")
       if (multisigContract && transaction && transaction.latestTransactionHash && transaction.latestTransactionHash !== "") {
         // Get the latest transaction status and stop polling if it has been finalized
         const response = await provider.getTransactionReceipt(transaction.latestTransactionHash);

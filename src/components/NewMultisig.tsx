@@ -7,6 +7,7 @@ import {
   Abi,
   CompiledContract, json, number
 } from "starknet";
+import { toBN } from "starknet/utils/number";
 import Button from "~/components/Button";
 import { Input, Select } from "~/components/Input";
 import Paragraph from "~/components/Paragraph";
@@ -36,7 +37,7 @@ export function NewMultisig() {
 
   // Input state
   const [signerThreshold, setSignerThreshold] = useState<number>(1);
-  const [totalSigners, setTotalSigners] = useState<number>(2);
+  const [totalSigners, setTotalSigners] = useState<number>(1);
   const [signers, setSigners] = useState<string[]>([]);
 
   const [deploying, setDeploying] = useState<boolean>(false);
@@ -48,7 +49,7 @@ export function NewMultisig() {
 
   // Prefill the first field with currently logged in wallet address
   useEffect(() => {
-    const emptySigners = [...Array(totalSigners).keys()].map((item) => "");
+    const emptySigners = [...Array(totalSigners).keys(), ""].map(() => "");
     emptySigners[0] = account ?? "";
     setSigners(emptySigners);
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -57,18 +58,24 @@ export function NewMultisig() {
   const onDeploy = async () => {
     const _deployMultisig = async () => {
       setDeploying(true);
-      const bnSigners = signers.slice(0, signers.length - 1).map((o) => number.toBN(o));
-      const calldata = [bnSigners.length, ...bnSigners, signerThreshold];
+
+      // Construct constructor inputs as BigNumbers
+      const bnSigners = signers.slice(0, signers.length - 1).map((o) => number.toBN(o).toString());
+      const calldata = [toBN(bnSigners.length).toString(), ...bnSigners, toBN(signerThreshold).toString()];
+
+      // Call the contract factory with deployment instructions
       const deployment = await deployMultisig({
         constructorCalldata: calldata,
       });
+
+      // Redirect the user to a pending deployment view upon deployment receipt
       if (deployment) {
         router.push(`/wallet/${deployment.address}`)
       } else {
         setDeploying(false);
       }
     };
-    await _deployMultisig();
+    signers.length > 0 && await _deployMultisig();
   };
 
   const onThresholdChange = (value: string) => {
@@ -114,7 +121,7 @@ export function NewMultisig() {
         {/* Inputs */}
         <InnerContainer>
         {signers.map((signer, i) => (
-          <Field key={i} inactive={signers.length > 2 && i === totalSigners.valueOf() && signer === ""}>
+          <Field key={i} inactive={signers.length > 1 && i === totalSigners.valueOf() && signer === ""}>
             <Label>Signer {i + 1} address:</Label>
             <Input
               type="text"

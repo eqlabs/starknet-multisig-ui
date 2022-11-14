@@ -49,15 +49,25 @@ export function useContractFactory({
 
   const deploy = useCallback(
     async ({ constructorCalldata, addressSalt }: DeployArgs) => {
-      if (factory) {
-        const contract = await factory.deploy(constructorCalldata, addressSalt);
-        state.multisigs.push({
-          address: validateAndParseAddress(contract.address),
-          transactionHash: contract.deployTransactionHash,
-          transactions: [],
-        });
-        setContract(contract);
-        return contract;
+      try {
+        if (factory) {
+          const contract = await factory.deploy(
+            constructorCalldata,
+            addressSalt
+          );
+
+          // Add the deployed multisig to state
+          state.multisigs.push({
+            address: validateAndParseAddress(contract.address),
+            transactionHash: contract.deployTransactionHash,
+            transactions: [],
+          });
+
+          setContract(contract);
+          return contract;
+        }
+      } catch (_e) {
+        console.error(_e);
       }
       return undefined;
     },
