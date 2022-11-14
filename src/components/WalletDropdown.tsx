@@ -36,6 +36,10 @@ const Content = styled(DropdownMenu.Content, {
   marginTop: "$1",
   borderRadius: "2rem",
   padding: "$4",
+  display: "flex",
+  flexDirection: "column",
+  justifyContent: "flex-start",
+  textAlign: "right"
 })
 
 const WalletDropdown = () => {
@@ -68,7 +72,7 @@ const WalletDropdown = () => {
             {/* TODO: List past and current transactions to the user */}
             {/* <DropdownMenu.Separator />
             <DropdownMenu.Item>{transactions.slice(transactions.length - 10, transactions.length - 1).map(tx => (
-              <div key={tx.hash}>{tx.status}</div>
+              <div key={tx.hash}>{truncateAddress(tx.hash) + " - " + tx.status}</div>
             ))}</DropdownMenu.Item> */}
           </Content>
         </DropdownMenu.Portal>
