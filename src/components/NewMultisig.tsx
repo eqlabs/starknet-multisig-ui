@@ -63,6 +63,8 @@ export function NewMultisig() {
       const bnSigners = signers.slice(0, signers.length - 1).map((o) => toFelt(o));
       const calldata = [toFelt(bnSigners.length), ...bnSigners, toFelt(signerThreshold)];
 
+      console.log(calldata);
+
       // Call the contract factory with deployment instructions
       const deployment = await deployMultisig({
         constructorCalldata: calldata,
