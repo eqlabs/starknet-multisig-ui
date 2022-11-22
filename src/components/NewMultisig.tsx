@@ -4,15 +4,13 @@ import {
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import {
-  Abi,
   CompiledContract, json
 } from "starknet";
-import { toFelt } from "starknet/utils/number";
+import { toBN } from "starknet/utils/number";
 import Button from "~/components/Button";
 import { Input, Select } from "~/components/Input";
 import Paragraph from "~/components/Paragraph";
-import { useContractFactory } from "~/hooks/deploy";
-import MultisigSource from "../../public/Multisig.json";
+import { useContractDeployer } from "~/hooks/deploy";
 import { Field, Fieldset, Label, Legend } from "./Forms";
 import InnerContainer from "./InnerContainer";
 
@@ -42,9 +40,8 @@ export function NewMultisig() {
 
   const [deploying, setDeploying] = useState<boolean>(false);
 
-  const { deploy: deployMultisig } = useContractFactory({
+  const { deploy: deployMultisig } = useContractDeployer({
     compiledContract: compiledMultisig,
-    abi: (MultisigSource as any).abi as Abi,
   });
 
   // Prefill the first field with currently logged in wallet address
@@ -60,10 +57,8 @@ export function NewMultisig() {
       setDeploying(true);
 
       // Construct constructor inputs as BigNumbers
-      const bnSigners = signers.slice(0, signers.length - 1).map((o) => toFelt(o));
-      const calldata = [toFelt(bnSigners.length), ...bnSigners, toFelt(signerThreshold)];
-
-      console.log(calldata);
+      const bnSigners = signers.slice(0, signers.length - 1).map((o) => toBN(o));
+      const calldata = [bnSigners.length, ...bnSigners, signerThreshold];
 
       // Call the contract factory with deployment instructions
       const deployment = await deployMultisig({
@@ -72,7 +67,7 @@ export function NewMultisig() {
 
       // Redirect the user to a pending deployment view upon deployment receipt
       if (deployment) {
-        router.push(`/wallet/${deployment.address}`)
+        router.push(`/multisig/${deployment.address}`)
       } else {
         setDeploying(false);
       }

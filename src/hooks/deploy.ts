@@ -1,18 +1,17 @@
 import { useStarknet } from "@starknet-react/core";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import {
   Abi,
   CompiledContract,
   Contract,
-  ContractFactory,
-  Provider,
+  DeployContractResponse,
   RawCalldata,
   validateAndParseAddress,
 } from "starknet";
 import { BigNumberish } from "starknet/dist/utils/number";
 import { state } from "~/state";
 
-interface UseContractFactoryArgs {
+interface UseContractDeployerArgs {
   compiledContract?: CompiledContract;
   abi?: Abi;
 }
@@ -22,8 +21,7 @@ interface DeployArgs {
   addressSalt?: BigNumberish;
 }
 
-interface UseContractFactory {
-  factory?: ContractFactory;
+interface UseContractDeployer {
   deploy: ({
     constructorCalldata,
     addressSalt,
@@ -31,37 +29,38 @@ interface UseContractFactory {
   contract?: Contract;
 }
 
-export function useContractFactory({
+export function useContractDeployer({
   compiledContract,
-  abi,
-}: UseContractFactoryArgs): UseContractFactory {
+}: UseContractDeployerArgs): UseContractDeployer {
   const { library } = useStarknet();
-  const [factory, setFactory] = useState<ContractFactory | undefined>();
   const [contract, setContract] = useState<Contract | undefined>();
 
-  useEffect(() => {
-    if (compiledContract) {
-      setFactory(
-        new ContractFactory(compiledContract, library as Provider, abi)
-      );
-    }
-  }, [compiledContract, library, abi]);
-
   const deploy = useCallback(
-    async ({ constructorCalldata, addressSalt }: DeployArgs) => {
+    async ({ constructorCalldata }: DeployArgs) => {
       try {
-        if (factory) {
-          const contract = await factory.deploy(
-            constructorCalldata,
-            addressSalt
-          );
+        if (compiledContract) {
+          await library.declareContract({
+            contract: compiledContract,
+          });
+
+          const deployReceipt: DeployContractResponse =
+            await library.deployContract({
+              contract: compiledContract,
+              constructorCalldata: constructorCalldata,
+            });
 
           // Add the deployed multisig to state
           state.multisigs.push({
-            address: validateAndParseAddress(contract.address),
-            transactionHash: contract.deployTransactionHash,
+            address: validateAndParseAddress(deployReceipt.contract_address),
+            transactionHash: deployReceipt.transaction_hash,
             transactions: [],
           });
+
+          const contract = new Contract(
+            compiledContract.abi,
+            validateAndParseAddress(deployReceipt.contract_address),
+            library
+          );
 
           setContract(contract);
           return contract;
@@ -71,8 +70,8 @@ export function useContractFactory({
       }
       return undefined;
     },
-    [factory]
+    [compiledContract, library]
   );
 
-  return { factory, contract, deploy };
+  return { contract, deploy };
 }
