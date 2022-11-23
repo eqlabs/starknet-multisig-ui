@@ -1,7 +1,12 @@
 import { useStarknet } from "@starknet-react/core";
 import throttle from "lodash/throttle";
 import { useEffect, useMemo, useState } from "react";
-import { Abi, Contract, validateAndParseAddress } from "starknet";
+import {
+  Abi,
+  Contract,
+  getChecksumAddress,
+  validateAndParseAddress,
+} from "starknet";
 import { sanitizeHex } from "starknet/dist/utils/encode";
 import { toBN, toHex } from "starknet/dist/utils/number";
 import {
@@ -36,15 +41,14 @@ export const useMultisigContract = (
   const [contract, setContract] = useState<Contract | undefined>();
 
   const validatedAddress = useMemo(
-    () => validateAndParseAddress(address),
+    () => validateAndParseAddress(getChecksumAddress(address)),
     [address]
   );
 
   // Fetch and set the multisig contract to state
   useEffect(() => {
-    if (address) {
+    if (validatedAddress) {
       try {
-        const validatedAddress = validateAndParseAddress(address);
         const multisigContract = new Contract(
           Source.abi as Abi,
           validatedAddress,
@@ -55,7 +59,7 @@ export const useMultisigContract = (
         console.error(_e);
       }
     }
-  }, [address, provider]);
+  }, [provider, validatedAddress]);
 
   // Search for multisig in local cache
   const cachedMultisig = findMultisig(validatedAddress);
@@ -144,7 +148,11 @@ export const useMultisigContract = (
                 (await contract?.get_signers()) || {
                   signers: [],
                 };
-              const signers = signersResponse.map(toHex).map(sanitizeHex);
+              const signers = signersResponse
+                .map(toHex)
+                .map(sanitizeHex)
+                .map(getChecksumAddress)
+                .map(validateAndParseAddress);
               const { threshold } = (await contract?.get_threshold()) || {
                 threshold: toBN(0),
               };
@@ -171,7 +179,7 @@ export const useMultisigContract = (
             setLoading(false);
           }, 5000)
         : () => {},
-    [cachedMultisig, contract, status.value]
+    [cachedMultisig, contract, status.value, validatedAddress]
   );
 
   // Basic info fetcher
@@ -187,7 +195,7 @@ export const useMultisigContract = (
 
   const fetchTransactions = useMemo(
     () =>
-      address && contract && transactionCount > 0
+      validatedAddress && contract && transactionCount > 0
         ? throttle(
             async () => {
               try {
@@ -204,7 +212,7 @@ export const useMultisigContract = (
                       contract,
                       currentTransactionIndex
                     );
-                    addMultisigTransaction(address, parsedTransaction);
+                    addMultisigTransaction(validatedAddress, parsedTransaction);
                   }
                   currentTransactionIndex -= 1;
                 }
@@ -216,7 +224,7 @@ export const useMultisigContract = (
             { trailing: true }
           )
         : () => {},
-    [address, contract, transactionCount]
+    [validatedAddress, cachedMultisig?.transactions, contract, transactionCount]
   );
 
   // Fetch transaction info if transactionCount has changed
@@ -225,7 +233,7 @@ export const useMultisigContract = (
     status.value &&
       !pendingStatuses.includes(status.value as TransactionStatus) &&
       fetchTransactions();
-  }, [address, contract, fetchTransactions, status.value, transactionCount]);
+  }, [fetchTransactions, status.value]);
 
   return {
     contract,

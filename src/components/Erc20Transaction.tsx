@@ -1,6 +1,6 @@
 import { useContract } from "@starknet-react/core";
 import { useEffect, useState } from "react";
-import { Abi, Contract, validateAndParseAddress } from "starknet";
+import { Abi, Contract, getChecksumAddress, validateAndParseAddress } from "starknet";
 import { getSelectorFromName } from "starknet/dist/utils/hash";
 import { bnToUint256 } from "starknet/dist/utils/uint256";
 import { toBN } from "starknet/utils/number";
@@ -102,7 +102,7 @@ const Erc20Transaction = ({multisigContract}: {multisigContract?: Contract}) => 
           validationFunction={(e) => {
             try {
               // TODO: This "validation" accepts things like 0 or "asd" as addresses, as they can be parsed and padded to the 64 bit addresses. Only accept already parsed addresses from the users.
-              const result = validateAndParseAddress(e.target.value)
+              const result = validateAndParseAddress(getChecksumAddress(e.target.value))
               return !!result
             } catch (_e) {
               return false

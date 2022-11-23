@@ -1,4 +1,9 @@
-import { Abi, Contract, validateAndParseAddress } from "starknet";
+import {
+  Abi,
+  Contract,
+  getChecksumAddress,
+  validateAndParseAddress,
+} from "starknet";
 import { snapshot } from "valtio";
 import {
   MultisigInfo,
@@ -31,7 +36,9 @@ export const updateTransactionStatus = (
 
 export const findMultisig = (address?: string) => {
   const multisig = state.multisigs?.find(
-    (contract) => contract.address === address
+    (contract) =>
+      validateAndParseAddress(getChecksumAddress(contract.address)) ===
+      validateAndParseAddress(getChecksumAddress(address))
   );
   return multisig || null;
 };
