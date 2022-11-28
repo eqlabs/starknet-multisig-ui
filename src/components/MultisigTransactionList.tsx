@@ -2,9 +2,7 @@ import { useStarknet } from "@starknet-react/core";
 import { styled } from "@stitches/react";
 import throttle from "lodash/throttle";
 import { useCallback, useEffect, useState } from "react";
-import { Contract } from "starknet";
-import { uint256ToBN } from "starknet/dist/utils/uint256";
-import { toBN, toHex } from "starknet/utils/number";
+import { Contract, number, uint256 } from "starknet";
 import { addMultisigTransaction, findTransaction, getTokenInfo } from "~/state/utils";
 import { MultisigTransaction, TransactionStatus } from "~/types";
 import { compareStatuses, formatAmount, getMultisigTransactionInfo, getVoyagerContractLink, truncateAddress } from "~/utils";
@@ -153,8 +151,8 @@ const Transaction = ({ multisigContract, threshold, transaction }: TransactionPr
 
     {transaction.function_selector === "transfer" &&
       <span>
-        {formatAmount(uint256ToBN({ low: transaction.calldata[1], high: transaction.calldata[2] }).toString(), 18)} {tokenSymbol} to 
-        {" "} <a href={getVoyagerContractLink(toHex(toBN(transaction.calldata[0])))} rel="noreferrer noopener" target="_blank">{truncateAddress(toHex(toBN(transaction.calldata[0])))}</a>
+        {formatAmount(uint256.uint256ToBN({ low: transaction.calldata[1], high: transaction.calldata[2] }).toString(), 18)} {tokenSymbol} to 
+        {" "} <a href={getVoyagerContractLink(number.toHex(number.toBN(transaction.calldata[0])))} rel="noreferrer noopener" target="_blank">{truncateAddress(number.toHex(number.toBN(transaction.calldata[0])))}</a>
       </span>
     }
 

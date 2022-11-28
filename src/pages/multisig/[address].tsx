@@ -2,12 +2,13 @@ import { AnimatePresence } from "framer-motion";
 import type { GetServerSideProps, NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { validateAndParseAddress } from "starknet";
+import { getChecksumAddress, validateAndParseAddress } from "starknet";
 import BorderedContainer from "~/components/BorderedContainer";
 import Box from "~/components/Box";
 import { ExistingMultisig } from "~/components/ExistingMultisig";
 import Header from "~/components/Header";
 import { state } from "~/state";
+import { findMultisig } from "~/state/utils";
 import { SSRProps } from "~/types";
 
 const Contract: NextPage<SSRProps> = ({ contractAddress }) => {
@@ -16,10 +17,10 @@ const Contract: NextPage<SSRProps> = ({ contractAddress }) => {
   
   useEffect(() => {
     try {
-      const address = validateAndParseAddress(contractAddress);
+      const address = getChecksumAddress(validateAndParseAddress(contractAddress));
       if (address) {
         setValidatedAddress(address);
-        if (!state.multisigs.find(multisig => multisig.address === address)) {
+        if (!findMultisig(address)) {
           state.multisigs.push({ address: address, transactions: [] });
         }
       } else {

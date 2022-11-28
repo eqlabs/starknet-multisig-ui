@@ -4,12 +4,14 @@ import {
   Abi,
   CompiledContract,
   Contract,
-  DeployContractResponse,
+  getChecksumAddress,
+  number,
   RawCalldata,
   validateAndParseAddress,
 } from "starknet";
-import { BigNumberish } from "starknet/dist/utils/number";
 import { state } from "~/state";
+import { updateTransactionStatus } from "~/state/utils";
+import { TransactionStatus } from "~/types";
 
 interface UseContractDeployerArgs {
   compiledContract?: CompiledContract;
@@ -18,7 +20,7 @@ interface UseContractDeployerArgs {
 
 interface DeployArgs {
   constructorCalldata: RawCalldata;
-  addressSalt?: BigNumberish;
+  addressSalt?: number.BigNumberish;
 }
 
 interface UseContractDeployer {
@@ -32,33 +34,42 @@ interface UseContractDeployer {
 export function useContractDeployer({
   compiledContract,
 }: UseContractDeployerArgs): UseContractDeployer {
-  const { library } = useStarknet();
+  const { account, library } = useStarknet();
   const [contract, setContract] = useState<Contract | undefined>();
 
   const deploy = useCallback(
     async ({ constructorCalldata }: DeployArgs) => {
       try {
-        if (compiledContract) {
-          await library.declareContract({
+        if (
+          compiledContract &&
+          account &&
+          compiledContract.program &&
+          compiledContract.entry_points_by_type
+        ) {
+          const deployReceipt: any = await library.deployContract({
             contract: compiledContract,
+            constructorCalldata: constructorCalldata,
           });
 
-          const deployReceipt: DeployContractResponse =
-            await library.deployContract({
-              contract: compiledContract,
-              constructorCalldata: constructorCalldata,
-            });
+          const deployedAddress = getChecksumAddress(
+            validateAndParseAddress(deployReceipt.address)
+          );
 
           // Add the deployed multisig to state
           state.multisigs.push({
-            address: validateAndParseAddress(deployReceipt.contract_address),
+            address: deployedAddress,
             transactionHash: deployReceipt.transaction_hash,
             transactions: [],
           });
 
+          updateTransactionStatus(
+            deployReceipt.transaction_hash,
+            TransactionStatus.NOT_RECEIVED
+          );
+
           const contract = new Contract(
             compiledContract.abi,
-            validateAndParseAddress(deployReceipt.contract_address),
+            deployedAddress,
             library
           );
 
@@ -70,7 +81,7 @@ export function useContractDeployer({
       }
       return undefined;
     },
-    [compiledContract, library]
+    [account, compiledContract, library]
   );
 
   return { contract, deploy };

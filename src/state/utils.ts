@@ -34,6 +34,7 @@ export const updateTransactionStatus = (
   }
 };
 
+// A state util function that should be used to get information about a specific multisig contract
 export const findMultisig = (address?: string) => {
   const multisig = state.multisigs?.find(
     (contract) =>

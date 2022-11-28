@@ -1,9 +1,6 @@
 import { useContract } from "@starknet-react/core";
 import { useEffect, useState } from "react";
-import { Abi, Contract, getChecksumAddress, validateAndParseAddress } from "starknet";
-import { getSelectorFromName } from "starknet/dist/utils/hash";
-import { bnToUint256 } from "starknet/dist/utils/uint256";
-import { toBN } from "starknet/utils/number";
+import { Abi, Contract, getChecksumAddress, hash, number, uint256, validateAndParseAddress } from "starknet";
 import { addMultisigTransaction, getTokenInfo } from "~/state/utils";
 import { MultisigTransaction } from "~/types";
 import { fetchTokenBalance, parseAmount, parseMultisigTransaction } from "~/utils";
@@ -14,7 +11,7 @@ import { Input, ValidatedInput } from "./Input";
 import { LoaderWithDelay } from "./SkeletonLoader";
 
 const Erc20Transaction = ({multisigContract}: {multisigContract?: Contract}) => {
-  const targetFunctionSelector = getSelectorFromName("transfer");
+  const targetFunctionSelector = hash.getSelectorFromName("transfer");
   const [targetAddress, setTargetAddress] = useState<string>("");
   const [recipient, setRecipient] = useState<string>("");
   const [amount, setAmount] = useState<string>("");
@@ -22,8 +19,8 @@ const Erc20Transaction = ({multisigContract}: {multisigContract?: Contract}) => 
   const submit = async () => {
     if (multisigContract) {
       const parsedAmount = parseAmount(amount, tokenInfo?.decimals || 18)
-      const amountUint256 = bnToUint256(parsedAmount)
-      const callData = [toBN(recipient), amountUint256.low, amountUint256.high];
+      const amountUint256 = uint256.bnToUint256(parsedAmount)
+      const callData = [number.toBN(recipient), amountUint256.low, amountUint256.high];
 
       const { res: nonce } = await multisigContract?.get_transactions_len();
       const response = await multisigContract?.submit_transaction(targetAddress, targetFunctionSelector, callData, nonce);

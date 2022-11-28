@@ -1,4 +1,4 @@
-import { Provider } from "starknet";
+import { SequencerProvider } from "starknet";
 import { NetworkName } from "~/types";
 
 export const rpcUrl =
@@ -7,10 +7,8 @@ export const rpcUrl =
 export const networkName: NetworkName =
   (process.env.NEXT_PUBLIC_NETWORK as NetworkName) || "goerli-alpha";
 
-export const defaultProvider = new Provider({
-  sequencer: {
-    network: networkName,
-  },
+export const defaultProvider = new SequencerProvider({
+  network: networkName,
 });
 
 export const voyagerBaseUrl =

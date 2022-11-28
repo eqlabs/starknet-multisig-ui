@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react';
 import { FiArrowLeft } from 'react-icons/fi';
 import { validateAndParseAddress } from 'starknet';
 import { useMultisigContract } from "~/hooks/multisigContractHook";
-import { findMultisig } from '~/state/utils';
+import { findMultisig, findTransaction } from '~/state/utils';
 import { pendingStatuses } from '~/types';
 import { getVoyagerContractLink, getVoyagerTransactionLink } from '~/utils';
 import ArbitraryTransaction from './ArbitraryTransaction';
@@ -87,18 +87,19 @@ export const ExistingMultisig = ({ contractAddress }: MultisigProps) => {
   const contractLink = getVoyagerContractLink(contractAddress);
 
   useEffect(() => {
+    const deployTransaction = findTransaction(transactionFound);
     if (!loading) {
-      if (!pendingStatuses.includes(status)) {
+      if (!pendingStatuses.includes(status) || deployTransaction && !pendingStatuses.includes(deployTransaction.status)) {
         const delay = firstLoad ? 0 : 2000
         setTimeout(() => {
           setPendingStatus(false)
         }, delay)
-        setFirstLoad(false)
       } else {
-        setPendingStatus(true)
+        !firstLoad && setPendingStatus(true)
       }
+      setFirstLoad(false);
     }
-  }, [firstLoad, loading, status])
+  }, [firstLoad, loading, status, transactionFound])
 
   return (
     <>

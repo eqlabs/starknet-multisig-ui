@@ -4,9 +4,8 @@ import {
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import {
-  CompiledContract, json
+  CompiledContract, json, number
 } from "starknet";
-import { toBN } from "starknet/utils/number";
 import Button from "~/components/Button";
 import { Input, Select } from "~/components/Input";
 import Paragraph from "~/components/Paragraph";
@@ -57,7 +56,7 @@ export function NewMultisig() {
       setDeploying(true);
 
       // Construct constructor inputs as BigNumbers
-      const bnSigners = signers.slice(0, signers.length - 1).map((o) => toBN(o));
+      const bnSigners = signers.slice(0, signers.length - 1).map((o) => number.toBN(o));
       const calldata = [bnSigners.length, ...bnSigners, signerThreshold];
 
       // Call the contract factory with deployment instructions

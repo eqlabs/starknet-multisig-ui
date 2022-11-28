@@ -4,11 +4,11 @@ import { useEffect, useMemo, useState } from "react";
 import {
   Abi,
   Contract,
+  encode,
   getChecksumAddress,
+  number,
   validateAndParseAddress,
 } from "starknet";
-import { sanitizeHex } from "starknet/dist/utils/encode";
-import { toBN, toHex } from "starknet/dist/utils/number";
 import {
   addMultisigTransaction,
   findMultisig,
@@ -26,7 +26,6 @@ export const useMultisigContract = (
   contract: Contract | undefined;
   status: TransactionStatus;
   loading: boolean;
-  transactionCount: number;
 } => {
   const pollingInterval = polling || 20000;
 
@@ -35,8 +34,6 @@ export const useMultisigContract = (
   const [status, send] = useTransactionStatus();
   const [loading, setLoading] = useState<boolean>(false);
 
-  const [signers, setSigners] = useState<string[]>([]);
-  const [threshold, setThreshold] = useState<number>(0);
   const [transactionCount, setTransactionCount] = useState<number>(0);
   const [contract, setContract] = useState<Contract | undefined>();
 
@@ -80,11 +77,10 @@ export const useMultisigContract = (
         // Poll only if the contract itself is deployed
         if (
           status.value &&
-          signers.length > 0 &&
           !pendingStatuses.includes(status.value as TransactionStatus)
         ) {
           const { res } = (await contract?.get_transactions_len()) || {
-            transactions_len: toBN(0),
+            transactions_len: number.toBN(0),
           };
 
           // Only update the state if there has been a change
@@ -104,7 +100,7 @@ export const useMultisigContract = (
     return () => {
       heartbeat && clearInterval(heartbeat);
     };
-  }, [contract, polling, pollingInterval, signers.length, status.value]);
+  }, [contract, polling, pollingInterval, status.value]);
 
   // Contract deployment status nudger
   useEffect(() => {
@@ -149,12 +145,12 @@ export const useMultisigContract = (
                   signers: [],
                 };
               const signers = signersResponse
-                .map(toHex)
-                .map(sanitizeHex)
+                .map(number.toHex)
+                .map(encode.sanitizeHex)
                 .map(getChecksumAddress)
                 .map(validateAndParseAddress);
               const { threshold } = (await contract?.get_threshold()) || {
-                threshold: toBN(0),
+                threshold: number.toBN(0),
               };
 
               if (cachedMultisig) {
@@ -171,8 +167,6 @@ export const useMultisigContract = (
                   transactions: [],
                 });
               }
-              setSigners(signers.map(validateAndParseAddress));
-              setThreshold(threshold.toNumber());
             } catch (e) {
               console.error(e);
             }
@@ -182,13 +176,10 @@ export const useMultisigContract = (
     [cachedMultisig, contract, status.value, validatedAddress]
   );
 
-  // Basic info fetcher
-  // TODO: Could be deprecated in favor of SSR / incremental static generation
+  // Fetcher for transactionCount
   useEffect(() => {
     contract !== undefined && fetchInfo();
     return () => {
-      setSigners([]);
-      setThreshold(0);
       setTransactionCount(0);
     };
   }, [contract, fetchInfo]);
@@ -239,6 +230,5 @@ export const useMultisigContract = (
     contract,
     status: status.value as TransactionStatus,
     loading,
-    transactionCount,
   };
 };

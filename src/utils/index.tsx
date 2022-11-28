@@ -1,8 +1,6 @@
 import { InjectedConnector } from "@starknet-react/core";
 import { CSS } from "@stitches/react";
-import { Abi, Contract, validateAndParseAddress } from "starknet";
-import { Uint256, uint256ToBN } from "starknet/dist/utils/uint256";
-import { BigNumberish, isHex, toBN, toHex } from "starknet/utils/number";
+import { Abi, Contract, number, uint256, validateAndParseAddress } from "starknet";
 import { ArgentX, Braavos } from "~/components/Logos";
 import {
   ComparisonRange,
@@ -91,7 +89,7 @@ export const compareStatuses = (
 };
 
 export const formatAmount = (
-  amount: BigNumberish,
+  amount: number.BigNumberish,
   decimals: number,
   accuracy?: number
 ): string => {
@@ -124,7 +122,7 @@ export const formatAmount = (
   return formatted;
 };
 
-export const parseAmount = (amount: string, decimals: number): BigNumberish => {
+export const parseAmount = (amount: string, decimals: number): number.BigNumberish => {
   let parsed: string = "0";
 
   const decimalIndex = amount.indexOf(".");
@@ -146,7 +144,7 @@ export const parseAmount = (amount: string, decimals: number): BigNumberish => {
     parsed = [left, zeros].join("");
   }
 
-  return toBN(parsed);
+  return number.toBN(parsed);
 };
 
 export const truncateAddress = (
@@ -186,7 +184,7 @@ export const getMultisigTransactionInfo = async (
 
   const formattedTransaction: MultisigTransaction = {
     nonce: currentTransactionIndex,
-    to: toHex(transaction.to),
+    to: number.toHex(transaction.to),
     function_selector: mapTargetHashToText(
       transaction.function_selector.toString()
     ),
@@ -206,12 +204,12 @@ export const parseMultisigTransaction = (
     nonce: rawMultisigTransaction.nonce.toNumber(),
     to: rawMultisigTransaction.targetAddress,
     function_selector: mapTargetHashToText(
-      isHex(rawMultisigTransaction.targetFunctionSelector)
-        ? toBN(rawMultisigTransaction.targetFunctionSelector)
+      number.isHex(rawMultisigTransaction.targetFunctionSelector)
+        ? number.toBN(rawMultisigTransaction.targetFunctionSelector)
         : rawMultisigTransaction.targetFunctionSelector.toString()
     ),
     calldata: rawMultisigTransaction.callData.map((data: any) =>
-      typeof data === "string" ? toBN(data) : toBN(data.toString())
+      typeof data === "string" ? number.toBN(data) : number.toBN(data.toString())
     ),
     calldata_len: rawMultisigTransaction.callData.length,
     executed: rawMultisigTransaction.executed,
@@ -231,7 +229,7 @@ export const fetchTokenSymbol = async (
       new Contract(Source.abi as Abi, targetAddress, defaultProvider);
     const symbolResponse = await contract?.symbol();
     tokenSymbol = shortStringFeltToStr(
-      toBN(filterNonFeltChars(symbolResponse.toString()))
+      number.toBN(filterNonFeltChars(symbolResponse.toString()))
     );
   } catch (e) {
     console.error("Could not fetch token symbol: ", e);
@@ -248,7 +246,7 @@ export const fetchTokenDecimals = async (
     const contract =
       targetContract ||
       new Contract(Source.abi as Abi, targetAddress, defaultProvider);
-    const decimalsResponse: { decimals: BigNumberish } =
+    const decimalsResponse: { decimals: number.BigNumberish } =
       await contract?.decimals();
     if (decimalsResponse) {
       tokenDecimals = decimalsResponse.decimals.toNumber();
@@ -271,7 +269,7 @@ export const fetchTokenBalance = async (
     const contract =
       targetContract ||
       new Contract(Source.abi as Abi, targetAddress, defaultProvider);
-    const balanceResponse: { balance: Uint256 } = await contract?.balanceOf(
+    const balanceResponse: { balance: uint256.Uint256 } = await contract?.balanceOf(
       userAddress
     );
     if (balanceResponse) {
@@ -279,7 +277,7 @@ export const fetchTokenBalance = async (
         tokenDecimals = await fetchTokenDecimals(targetAddress, contract);
       }
       tokenBalance = formatAmount(
-        uint256ToBN(balanceResponse.balance),
+        uint256.uint256ToBN(balanceResponse.balance),
         tokenDecimals
       );
     }
