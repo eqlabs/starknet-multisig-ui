@@ -1,9 +1,4 @@
-import {
-  Abi,
-  Contract,
-  getChecksumAddress,
-  validateAndParseAddress,
-} from "starknet";
+import { Abi, Contract, validateAndParseAddress } from "starknet";
 import { snapshot } from "valtio";
 import {
   MultisigInfo,
@@ -12,7 +7,7 @@ import {
   TransactionInfo,
   TransactionStatus,
 } from "~/types";
-import { fetchTokenDecimals, fetchTokenSymbol } from "~/utils";
+import { fetchTokenDecimals, fetchTokenSymbol, matchAddress } from "~/utils";
 import { defaultProvider } from "~/utils/config";
 import { state } from ".";
 import ERC20Source from "../../public/erc20.json";
@@ -36,12 +31,16 @@ export const updateTransactionStatus = (
 
 // A state util function that should be used to get information about a specific multisig contract
 export const findMultisig = (address?: string) => {
-  const multisig = state.multisigs?.find(
-    (contract) =>
-      validateAndParseAddress(getChecksumAddress(contract.address)) ===
-      validateAndParseAddress(getChecksumAddress(address))
+  const multisig = state.multisigs?.find((contract) =>
+    matchAddress(contract.address, address || "")
   );
   return multisig || null;
+};
+
+export const deleteMultisigFromCache = (address?: string) => {
+  state.multisigs = state.multisigs.filter(
+    (contract) => !matchAddress(contract.address, address || "")
+  );
 };
 
 export const updateMultisigInfo = (multisigInfo: MultisigInfo) => {

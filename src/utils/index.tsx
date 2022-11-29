@@ -1,6 +1,6 @@
 import { InjectedConnector } from "@starknet-react/core";
 import { CSS } from "@stitches/react";
-import { Abi, Contract, number, uint256, validateAndParseAddress } from "starknet";
+import { Abi, Contract, getChecksumAddress, number, uint256, validateAndParseAddress } from "starknet";
 import { ArgentX, Braavos } from "~/components/Logos";
 import {
   ComparisonRange,
@@ -166,6 +166,8 @@ export const truncateAddress = (
     ),
   ].join("…");
 };
+
+export const matchAddress = (a: string, b: string): boolean => validateAndParseAddress(getChecksumAddress(a)) === validateAndParseAddress(getChecksumAddress(b));
 
 export const getVoyagerTransactionLink = (txHash: string): string => {
   return voyagerBaseUrl + "tx/" + txHash;
