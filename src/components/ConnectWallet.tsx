@@ -40,7 +40,7 @@ export const ConnectWallet = () => {
           <Paragraph css={{ fontSize: "$lg", margin: "0", color: "#FFFFFF", width: "$xl", alignItems: "flex-start", justifyContent: "flex-start" }}>
             StarSign is an open-source project that lets you create and sign multisig contracts on the StarkNet. Starsign works on your browser and currently supports <a href="https://www.argent.xyz/argent-x/" target="_blank" rel="noreferrer noopener">ArgentX</a> & <a href="https://braavos.app/" target="_blank" rel="noreferrer noopener">Braavos</a> wallets.
             <br /><br />
-            <a href="https://github.com/eqlabs/starknet-multisig-ui" target="_blank" rel="noreferrer">View code on GitHub</a>, and <a href="https://discord.gg/Dt5a5Uus3t" target="_blank" rel="noreferrer noopener">ask for support on our Discord</a>.
+            <a href="https://github.com/eqlabs/starknet-multisig-ui" target="_blank" rel="noreferrer noopener">View code on GitHub</a>, and <a href="https://discord.gg/Dt5a5Uus3t" target="_blank" rel="noreferrer noopener">ask for support on our Discord</a>.
           </Paragraph>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
