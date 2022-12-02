@@ -9,11 +9,8 @@ import {
   number,
   validateAndParseAddress,
 } from "starknet";
-import {
-  addMultisigTransaction,
-  findMultisig,
-  updateMultisigInfo,
-} from "~/state/utils";
+import { state } from "~/state";
+import { addMultisigTransaction, updateMultisigInfo } from "~/state/utils";
 import { pendingStatuses, TransactionStatus } from "~/types";
 import { getMultisigTransactionInfo } from "~/utils";
 import Source from "../../public/Multisig.json";
@@ -40,8 +37,10 @@ export const useMultisigContract = (
     [address]
   );
 
-  // Search for multisig in local cache
-  const cachedMultisig = findMultisig(validatedAddress);
+  // Search for multisig in state / cache
+  const cachedMultisig = state.multisigs.find(
+    (multisig) => multisig.address === validatedAddress
+  );
 
   const { transaction } = useTransaction(
     cachedMultisig?.transactionHash,
