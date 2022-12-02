@@ -15,9 +15,9 @@ import {
   updateMultisigInfo,
 } from "~/state/utils";
 import { pendingStatuses, TransactionStatus } from "~/types";
-import { compareStatuses, getMultisigTransactionInfo } from "~/utils";
+import { getMultisigTransactionInfo } from "~/utils";
 import Source from "../../public/Multisig.json";
-import { useTransaction, useTransactionStatus } from "./transactionStatus";
+import { useTransaction } from "./transactionStatus";
 
 export const useMultisigContract = (
   address: string,
@@ -31,15 +31,21 @@ export const useMultisigContract = (
 
   const { library: provider } = useStarknet();
 
-  const [status, send] = useTransactionStatus();
   const [loading, setLoading] = useState<boolean>(false);
-
   const [transactionCount, setTransactionCount] = useState<number>(0);
   const [contract, setContract] = useState<Contract | undefined>();
 
   const validatedAddress = useMemo(
     () => validateAndParseAddress(getChecksumAddress(address)),
     [address]
+  );
+
+  // Search for multisig in local cache
+  const cachedMultisig = findMultisig(validatedAddress);
+
+  const { transaction } = useTransaction(
+    cachedMultisig?.transactionHash,
+    pollingInterval
   );
 
   // Fetch and set the multisig contract to state
@@ -58,14 +64,6 @@ export const useMultisigContract = (
     }
   }, [provider, validatedAddress]);
 
-  // Search for multisig in local cache
-  const cachedMultisig = findMultisig(validatedAddress);
-
-  const { transaction } = useTransaction(
-    cachedMultisig?.transactionHash,
-    pollingInterval
-  );
-
   // Poll for transactionCount
   useEffect(() => {
     let heartbeat: NodeJS.Timer | false;
@@ -76,8 +74,8 @@ export const useMultisigContract = (
       try {
         // Poll only if the contract itself is deployed
         if (
-          status.value &&
-          !pendingStatuses.includes(status.value as TransactionStatus)
+          transaction?.status &&
+          !pendingStatuses.includes(transaction?.status as TransactionStatus)
         ) {
           const { res } = (await contract?.get_transactions_len()) || {
             transactions_len: number.toBN(0),
@@ -100,43 +98,13 @@ export const useMultisigContract = (
     return () => {
       heartbeat && clearInterval(heartbeat);
     };
-  }, [contract, polling, pollingInterval, status.value]);
-
-  // Contract deployment status nudger
-  useEffect(() => {
-    const getContractStatus = async () => {
-      // If match found, use more advanced state transitions
-      if (!transaction?.status) {
-        try {
-          // If match not found, just see if contract is deployed
-          const { res: transactionCount } =
-            await contract?.get_transactions_len();
-          transactionCount && send("DEPLOYED");
-        } catch (_e) {
-          console.error(_e);
-        }
-      }
-
-      // Nudge the state machine forward or reject
-      if (
-        transaction?.status &&
-        compareStatuses(transaction.status, status.value as TransactionStatus) >
-          0
-      ) {
-        send("ADVANCE");
-      } else if (transaction?.status === TransactionStatus.REJECTED) {
-        send("REJECT");
-      }
-    };
-
-    contract && getContractStatus();
-  }, [contract, send, status.value, transaction?.status]);
+  }, [contract, polling, pollingInterval, transaction?.status]);
 
   const fetchInfo = useMemo(
     () =>
       contract &&
-      status.value &&
-      !pendingStatuses.includes(status.value as TransactionStatus)
+      transaction?.status &&
+      !pendingStatuses.includes(transaction?.status as TransactionStatus)
         ? throttle(async () => {
             !cachedMultisig && setLoading(true);
             try {
@@ -173,7 +141,7 @@ export const useMultisigContract = (
             setLoading(false);
           }, 5000)
         : () => {},
-    [cachedMultisig, contract, status.value, validatedAddress]
+    [cachedMultisig, contract, transaction?.status, validatedAddress]
   );
 
   // Fetcher for transactionCount
@@ -221,14 +189,14 @@ export const useMultisigContract = (
   // Fetch transaction info if transactionCount has changed
   useEffect(() => {
     // Fetch transactions of this multisig if the contract is deployed
-    status.value &&
-      !pendingStatuses.includes(status.value as TransactionStatus) &&
+    transaction?.status &&
+      !pendingStatuses.includes(transaction?.status as TransactionStatus) &&
       fetchTransactions();
-  }, [fetchTransactions, status.value]);
+  }, [fetchTransactions, transaction?.status]);
 
   return {
     contract,
-    status: status.value as TransactionStatus,
+    status: transaction?.status as TransactionStatus,
     loading,
   };
 };

@@ -83,11 +83,11 @@ export const ExistingMultisig = ({ contractAddress }: MultisigProps) => {
   const multisig = findMultisig(contractAddress)
 
   const transactionFound = multisig?.transactionHash
-  const transactionLink = getVoyagerTransactionLink(contractAddress);
+  const transactionLink = getVoyagerTransactionLink(transactionFound || "");
   const contractLink = getVoyagerContractLink(contractAddress);
+  const deployTransaction = findTransaction(transactionFound);
 
   useEffect(() => {
-    const deployTransaction = findTransaction(transactionFound);
     if (!loading) {
       if (!pendingStatuses.includes(status) || deployTransaction && !pendingStatuses.includes(deployTransaction.status)) {
         const delay = firstLoad ? 0 : 2000
@@ -99,7 +99,7 @@ export const ExistingMultisig = ({ contractAddress }: MultisigProps) => {
       }
       setFirstLoad(false);
     }
-  }, [firstLoad, loading, status, transactionFound])
+  }, [deployTransaction, firstLoad, loading, status, transactionFound])
 
   return (
     <>

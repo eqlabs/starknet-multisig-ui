@@ -17,7 +17,6 @@ export const updateTransactionStatus = (
   newStatus: TransactionStatus
 ) => {
   const { transactions } = snapshot(state);
-
   const transactionIndex =
     transactions?.findIndex((transaction) => transaction.hash === hash) || -1;
   const newTransactionStatus = { hash: hash, status: newStatus };

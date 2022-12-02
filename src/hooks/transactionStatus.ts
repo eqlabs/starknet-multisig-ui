@@ -1,59 +1,10 @@
 import { useStarknet } from "@starknet-react/core";
-import { useMachine } from "@xstate/react";
 import { useEffect, useState } from "react";
-import { createMachine } from "xstate";
-import { findTransaction, updateTransactionStatus } from "~/state/utils";
+import { useSnapshot } from "valtio";
+import { state } from "~/state";
+import { updateTransactionStatus } from "~/state/utils";
 import { TransactionInfo, TransactionStatus } from "~/types";
 import { compareStatuses } from "~/utils";
-
-const transactionStateMachine = createMachine({
-  id: "transactionStatus",
-  schema: {
-    context: {} as { value: TransactionStatus },
-    events: {} as
-      | { type: "ADVANCE" }
-      | { type: "REJECT" }
-      | { type: "DEPLOYED" },
-  },
-  initial: TransactionStatus.NOT_RECEIVED,
-  states: {
-    [TransactionStatus.NOT_RECEIVED]: {
-      on: {
-        ADVANCE: TransactionStatus.RECEIVED,
-        REJECT: TransactionStatus.REJECTED,
-        DEPLOYED: TransactionStatus.ACCEPTED_ON_L2,
-      },
-    },
-    [TransactionStatus.RECEIVED]: {
-      on: {
-        ADVANCE: TransactionStatus.PENDING,
-        REJECT: TransactionStatus.REJECTED,
-      },
-    },
-    [TransactionStatus.PENDING]: {
-      on: {
-        ADVANCE: TransactionStatus.ACCEPTED_ON_L2,
-        REJECT: TransactionStatus.REJECTED,
-      },
-    },
-    [TransactionStatus.ACCEPTED_ON_L2]: {
-      on: {
-        ADVANCE: TransactionStatus.ACCEPTED_ON_L1,
-        REJECT: TransactionStatus.REJECTED,
-      },
-    },
-    [TransactionStatus.ACCEPTED_ON_L1]: {},
-    [TransactionStatus.REJECTED]: {
-      on: {
-        ADVANCE: TransactionStatus.NOT_RECEIVED,
-      },
-    },
-  },
-});
-
-export const useTransactionStatus = () => {
-  return useMachine(transactionStateMachine);
-};
 
 export const useTransaction = (
   transactionHash?: string,
@@ -64,6 +15,8 @@ export const useTransaction = (
   const pollingInterval = polling || 2000;
 
   const [loading, setLoading] = useState<boolean>(true);
+
+  const { transactions } = useSnapshot(state);
 
   useEffect(() => {
     let heartbeat: NodeJS.Timer | false;
@@ -93,5 +46,8 @@ export const useTransaction = (
     };
   }, [transactionHash, polling, provider, pollingInterval]);
 
-  return { transaction: findTransaction(transactionHash), loading };
+  return {
+    transaction: transactions.find((tx) => tx.hash === transactionHash) || null,
+    loading,
+  };
 };
