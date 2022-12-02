@@ -31,7 +31,7 @@ const Erc20Transaction = ({multisigContract}: {multisigContract?: Contract}) => 
         targetFunctionSelector,
         callData,
         executed: false,
-        threshold: 0,
+        confirmations: 0,
       });
 
       addMultisigTransaction(multisigContract.address, parsedTransaction, { hash: response.transaction_hash, status: response.code });
