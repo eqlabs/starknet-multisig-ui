@@ -1,4 +1,9 @@
-import { Abi, Contract, validateAndParseAddress } from "starknet";
+import {
+  Abi,
+  Contract,
+  getChecksumAddress,
+  validateAndParseAddress,
+} from "starknet";
 import { snapshot } from "valtio";
 import {
   MultisigInfo,
@@ -11,6 +16,12 @@ import { fetchTokenDecimals, fetchTokenSymbol, matchAddress } from "~/utils";
 import { defaultProvider } from "~/utils/config";
 import { state } from ".";
 import ERC20Source from "../../public/erc20.json";
+
+/**
+ * State utils for commonly used tasks regarding the valtio state.
+ * NOTE: Beware of using these in the place of useSnapshot,
+ * as they will not trigger a rerender in some cases.
+ *  */
 
 export const updateTransactionStatus = (
   hash: string,
@@ -28,7 +39,6 @@ export const updateTransactionStatus = (
   }
 };
 
-// A state util function that should be used to get information about a specific multisig contract
 export const findMultisig = (address?: string) => {
   const multisig = state.multisigs?.find((contract) =>
     matchAddress(contract.address, address || "")
@@ -101,31 +111,31 @@ export const getTokenInfo = async (
   tokenAddress: string
 ): Promise<TokenInfo | null> => {
   const { tokenInfo } = snapshot(state);
-  const validatedAddress = validateAndParseAddress(tokenAddress);
+  const validatedAddress = getChecksumAddress(
+    validateAndParseAddress(tokenAddress)
+  );
+
+  // Get token info from cache if possible
   let returnedTokenInfo = tokenInfo ? tokenInfo[validatedAddress] : null;
-  if (validatedAddress && returnedTokenInfo) {
-    if (!returnedTokenInfo) {
-      try {
-        const targetContract = new Contract(
-          ERC20Source.abi as Abi,
-          tokenAddress,
-          defaultProvider
-        );
 
-        if (validateAndParseAddress(tokenAddress)) {
-          const symbol = await fetchTokenSymbol(tokenAddress, targetContract);
-          const decimals = await fetchTokenDecimals(
-            tokenAddress,
-            targetContract
-          );
+  // If no cache was found, fetch info on-chain
+  if (validatedAddress && !returnedTokenInfo) {
+    try {
+      const targetContract = new Contract(
+        ERC20Source.abi as Abi,
+        tokenAddress,
+        defaultProvider
+      );
 
-          state.tokenInfo[validatedAddress] = { symbol, decimals };
-          returnedTokenInfo = { symbol, decimals };
-        }
-      } catch (e) {
-        console.error(e);
-      }
+      const symbol = await fetchTokenSymbol(tokenAddress, targetContract);
+      const decimals = await fetchTokenDecimals(tokenAddress, targetContract);
+
+      state.tokenInfo[validatedAddress] = { symbol, decimals };
+      returnedTokenInfo = { symbol, decimals };
+    } catch (e) {
+      console.error(e);
     }
   }
+
   return returnedTokenInfo;
 };

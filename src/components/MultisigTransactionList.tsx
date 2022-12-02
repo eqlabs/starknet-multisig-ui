@@ -3,7 +3,9 @@ import { styled } from "@stitches/react";
 import throttle from "lodash/throttle";
 import { useCallback, useEffect, useState } from "react";
 import { Contract, number, uint256 } from "starknet";
-import { addMultisigTransaction, findTransaction, getTokenInfo } from "~/state/utils";
+import { useSnapshot } from "valtio";
+import { state } from "~/state";
+import { addMultisigTransaction, getTokenInfo } from "~/state/utils";
 import { MultisigTransaction, TransactionStatus } from "~/types";
 import { compareStatuses, formatAmount, getMultisigTransactionInfo, getVoyagerContractLink, truncateAddress } from "~/utils";
 import { StyledButton } from "./Button";
@@ -61,17 +63,17 @@ type TransactionProps = {
 const Transaction = ({ multisigContract, threshold, transaction }: TransactionProps) => {
   const { library: provider } = useStarknet();
   const [idleDelay, activeDelay] = [60000, 5000]
+  const { transactions } = useSnapshot(state);
+
+  const cachedTransaction = transactions.find(tx => tx.hash === transaction.latestTransactionHash);
 
   const getInteractionReadiness = useCallback(() => {
-    const cachedTransaction = findTransaction(transaction.latestTransactionHash);
     return compareStatuses(cachedTransaction?.status || TransactionStatus.NOT_RECEIVED, TransactionStatus.ACCEPTED_ON_L2) < 0
-  }, [transaction.latestTransactionHash]);
+  }, [cachedTransaction?.status]);
 
   useEffect(() => {
     let heartbeat: NodeJS.Timer | false;
     let latestStatus: TransactionStatus = TransactionStatus.NOT_RECEIVED;
-
-    const cachedTransaction = findTransaction(transaction.latestTransactionHash);
 
     const getLatestStatus = async () => {
       if (multisigContract && transaction && transaction.latestTransactionHash && transaction.latestTransactionHash !== "") {
@@ -109,7 +111,7 @@ const Transaction = ({ multisigContract, threshold, transaction }: TransactionPr
     return () => {
       heartbeat && clearInterval(heartbeat);
     };
-  }, [activeDelay, idleDelay, multisigContract, provider, transaction])
+  }, [activeDelay, cachedTransaction, idleDelay, multisigContract, provider, transaction])
 
   const [tokenSymbol, setTokenSymbol] = useState<string>("");
   useEffect(() => {
@@ -155,7 +157,7 @@ const Transaction = ({ multisigContract, threshold, transaction }: TransactionPr
         {" "} <a href={getVoyagerContractLink(number.toHex(number.toBN(transaction.calldata[0])))} rel="noreferrer noopener" target="_blank">{truncateAddress(number.toHex(number.toBN(transaction.calldata[0])))}</a>
       </span>
     }
-
+    {/* Buttons for confirming & executing transactions */}
     <div style={{display: "flex", flexDirection: "row", alignItems: "center"}}>
       <Signatures approved={transaction.confirmations === threshold}><PencilLine css={{stroke: "$textMuted"}}/>{transaction.confirmations + "/" + threshold}</Signatures>
       <div>
@@ -166,13 +168,13 @@ const Transaction = ({ multisigContract, threshold, transaction }: TransactionPr
   </TransactionWrapper>)
 }
 
-const MultisigTransactionList = ({multisigContract, threshold, transactions}: {multisigContract?: Contract, threshold: number, transactions?: MultisigTransaction[]}) => {
-  return (<ul style={{ display: "flex", flexDirection: "column", position: "relative", margin: "0", padding: "0"}}>
-      {transactions?.filter(transaction => !transaction.executed).map(transaction => (
-        <Transaction multisigContract={multisigContract} threshold={threshold} transaction={transaction} key={`multisigTransaction-${transaction.nonce}`} />
-      ))}
-    </ul>
-  );
-}
+const MultisigTransactionList = ({multisigContract, threshold, transactions}: {multisigContract?: Contract, threshold: number, transactions?: MultisigTransaction[]}) => (
+  <ul style={{ display: "flex", flexDirection: "column", position: "relative", margin: "0", padding: "0"}}>
+    {transactions?.filter(transaction => !transaction.executed).map(transaction => (
+      <Transaction multisigContract={multisigContract} threshold={threshold} transaction={transaction} key={`multisigTransaction-${transaction.nonce}`} />
+    ))}
+  </ul>
+);
+
 
 export default MultisigTransactionList;

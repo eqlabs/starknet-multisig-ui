@@ -153,11 +153,13 @@ export const truncateAddress = (
 ): string => {
   let validatedAddress = address;
   let substrLength = substringLength || 4;
+  
   try {
     validatedAddress = validateAndParseAddress(address);
   } catch (_e) {
     console.warn(_e);
   }
+
   return [
     validatedAddress.substring(0, substrLength),
     validatedAddress.substring(
