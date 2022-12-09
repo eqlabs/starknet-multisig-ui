@@ -1,11 +1,14 @@
 import { styled } from "@stitches/react";
 
 export const Fieldset = styled("fieldset", {
+  display: "flex",
+  flexDirection: "column",
   padding: "$1 0",
   position: "relative",
   border: 0,
   margin: 0,
   maxWidth: "100%",
+  gap: "$4",
 });
 
 export const Legend = styled("legend", {
@@ -14,7 +17,6 @@ export const Legend = styled("legend", {
 });
 
 export const Field = styled("div", {
-  margin: "$4 0",
   display: "block",
   variants: {
     inactive: {
@@ -28,4 +30,6 @@ export const Field = styled("div", {
 export const Label = styled("label", {
   marginBottom: "$2",
   display: "block",
+  fontSize: "small",
+  textTransform: "uppercase"
 });

@@ -1,12 +1,9 @@
 import { useContract } from "@starknet-react/core";
 import { useEffect, useState } from "react";
-import { Abi, Contract, validateAndParseAddress } from "starknet";
-import { getSelectorFromName } from "starknet/dist/utils/hash";
-import { bnToUint256, Uint256, uint256ToBN } from "starknet/dist/utils/uint256";
-import { BigNumberish, toBN } from "starknet/utils/number";
-import { addMultisigTransaction } from "~/state/utils";
+import { Abi, Contract, getChecksumAddress, hash, number, uint256, validateAndParseAddress } from "starknet";
+import { addMultisigTransaction, getTokenInfo } from "~/state/utils";
 import { MultisigTransaction } from "~/types";
-import { filterNonFeltChars, formatAmount, parseAmount, parseMultisigTransaction, shortStringFeltToStr } from "~/utils";
+import { fetchTokenBalance, parseAmount, parseMultisigTransaction } from "~/utils";
 import Source from "../../public/erc20.json";
 import Button from "./Button";
 import { Field, Fieldset, Label } from "./Forms";
@@ -14,7 +11,7 @@ import { Input, ValidatedInput } from "./Input";
 import { LoaderWithDelay } from "./SkeletonLoader";
 
 const Erc20Transaction = ({multisigContract}: {multisigContract?: Contract}) => {
-  const targetFunctionSelector = getSelectorFromName("transfer");
+  const targetFunctionSelector = hash.getSelectorFromName("transfer");
   const [targetAddress, setTargetAddress] = useState<string>("");
   const [recipient, setRecipient] = useState<string>("");
   const [amount, setAmount] = useState<string>("");
@@ -22,8 +19,8 @@ const Erc20Transaction = ({multisigContract}: {multisigContract?: Contract}) => 
   const submit = async () => {
     if (multisigContract) {
       const parsedAmount = parseAmount(amount, tokenInfo?.decimals || 18)
-      const amountUint256 = bnToUint256(parsedAmount)
-      const callData = [toBN(recipient), amountUint256.low, amountUint256.high];
+      const amountUint256 = uint256.bnToUint256(parsedAmount)
+      const callData = [number.toBN(recipient), amountUint256.low, amountUint256.high];
 
       const { res: nonce } = await multisigContract?.get_transactions_len();
       const response = await multisigContract?.submit_transaction(targetAddress, targetFunctionSelector, callData, nonce);
@@ -34,10 +31,8 @@ const Erc20Transaction = ({multisigContract}: {multisigContract?: Contract}) => 
         targetFunctionSelector,
         callData,
         executed: false,
-        threshold: 0,
+        confirmations: 0,
       });
-
-      console.log(parsedTransaction, response)
 
       addMultisigTransaction(multisigContract.address, parsedTransaction, { hash: response.transaction_hash, status: response.code });
     }
@@ -50,31 +45,18 @@ const Erc20Transaction = ({multisigContract}: {multisigContract?: Contract}) => 
 
   const [tokenInfo, setTokenInfo] = useState<{symbol: string | undefined, balance: string | undefined, decimals: number | undefined} | undefined | null>();
   useEffect(() => {
-    const fetchTokenInfo = async () => {
-      let symbol, balance, decimals;
-      try {
-        if (validateAndParseAddress(targetAddress)) {
-          setTokenInfo(null);
-          const symbolResponse: string = await targetContract?.symbol();
-          const decimalsResponse: { decimals: BigNumberish } = await targetContract?.decimals();
-          const balanceResponse: { balance: Uint256 } = await targetContract?.balanceOf(multisigContract?.address);
-          if (symbolResponse) {
-            symbol = shortStringFeltToStr(toBN(filterNonFeltChars(symbolResponse.toString())));
-          }
-          if (decimalsResponse) {
-            decimals = decimalsResponse.decimals.toNumber();
-            if (balanceResponse) {
-              balance = formatAmount(uint256ToBN(balanceResponse.balance), decimals)
-            }
-          }
+    const getToken = async () => {
+      if (multisigContract && targetAddress !== "") {
+        setTokenInfo(null);
+        const tokenInfo = await getTokenInfo(targetAddress);
+        if (tokenInfo) {
+          const tokenBalance = await fetchTokenBalance(targetAddress, multisigContract.address);
+          setTokenInfo({ ...tokenInfo, balance: tokenBalance })
         }
-      } catch (error) {
-        console.error(error);
       }
-      setTokenInfo({ symbol, balance, decimals })
     }
-    fetchTokenInfo()
-  }, [multisigContract?.address, targetAddress, targetContract])
+    multisigContract && getToken()
+  }, [multisigContract, multisigContract?.address, targetAddress, targetContract])
 
   return (
     <Fieldset>
@@ -117,7 +99,7 @@ const Erc20Transaction = ({multisigContract}: {multisigContract?: Contract}) => 
           validationFunction={(e) => {
             try {
               // TODO: This "validation" accepts things like 0 or "asd" as addresses, as they can be parsed and padded to the 64 bit addresses. Only accept already parsed addresses from the users.
-              const result = validateAndParseAddress(e.target.value)
+              const result = validateAndParseAddress(getChecksumAddress(e.target.value))
               return !!result
             } catch (_e) {
               return false

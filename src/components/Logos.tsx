@@ -1,8 +1,14 @@
+import Image from "next/image";
+import { IconProps } from "~/types";
+import argentXLogo from "../../public/image/argent-x-logo.png";
+import braavosLogo from "../../public/image/braavos-logo.png";
 import { styled } from "../../stitches.config";
 
 const Path = styled("path", {
-  fill: "$text",
+  fill: "#FFFFFF",
 });
+
+const StyledImage = styled(Image);
 
 export function Horizontal() {
   return (
@@ -41,3 +47,11 @@ export function Symbol() {
     </svg>
   );
 }
+
+export const ArgentX = ({height="20", width="20", className, css}: IconProps) => (
+  <StyledImage src={argentXLogo} alt="Argent X Logo" className={className} css={css} height={height} width={width} />
+)
+
+export const Braavos = ({height="20", width="20", className, css}: IconProps) => (
+  <StyledImage src={braavosLogo} alt="Braavos Logo" className={className} css={css} height={height} width={width} />
+)

@@ -2,34 +2,33 @@ import { AnimatePresence } from "framer-motion";
 import type { GetServerSideProps, NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { validateAndParseAddress } from "starknet";
+import { getChecksumAddress, validateAndParseAddress } from "starknet";
 import BorderedContainer from "~/components/BorderedContainer";
 import Box from "~/components/Box";
 import { ExistingMultisig } from "~/components/ExistingMultisig";
-import Footer from "~/components/Footer";
 import Header from "~/components/Header";
-import ModeToggle from "~/components/ModeToggle";
 import { state } from "~/state";
+import { findMultisig } from "~/state/utils";
 import { SSRProps } from "~/types";
 
 const Contract: NextPage<SSRProps> = ({ contractAddress }) => {
   const router = useRouter();
   const [validatedAddress, setValidatedAddress] = useState<string>();
-
+  
   useEffect(() => {
     try {
-      const address = validateAndParseAddress(contractAddress);
+      const address = getChecksumAddress(validateAndParseAddress(contractAddress));
       if (address) {
         setValidatedAddress(address);
-        if (!state.multisigs.find(multisig => multisig.address === address)) {
+        if (!findMultisig(address)) {
           state.multisigs.push({ address: address, transactions: [] });
         }
       } else {
-        router.push("/wallet");
+        router.push("/");
       }
     } catch (e) {
-      console.error("Not a valid address, redirecting back to /wallet");
-      router.push("/wallet");
+      console.error("Not a valid address, redirecting back to homepage");
+      router.push("/");
     }
   }, [contractAddress, router])
 
@@ -64,12 +63,10 @@ const Contract: NextPage<SSRProps> = ({ contractAddress }) => {
               opacity: { duration: 0.2 },
             }}
           >
-            <ModeToggle />
             {validatedAddress && <ExistingMultisig contractAddress={validatedAddress} />}
           </BorderedContainer>
         </AnimatePresence>
       </Box>
-      <Footer />
     </Box>
   );
 }

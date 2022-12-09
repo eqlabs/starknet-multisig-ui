@@ -2,6 +2,8 @@
 
 This page describes the used frontend implementation for the project, from a developer's perspective.
 
+The code for the multisig smart contract can be found at https://github.com/eqlabs/starknet-multisig
+
 ## Getting Started
 
 Run the development server:

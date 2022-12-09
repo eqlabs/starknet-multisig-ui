@@ -1,8 +1,17 @@
+import type { CSS } from "@stitches/react";
 import { ReactNode } from "react";
 
 export type SSRProps = {
   children?: ReactNode;
   contractAddress: string;
+};
+
+export type IconProps = {
+  width?: string;
+  height?: string;
+  viewBox?: string;
+  css?: CSS;
+  className?: string;
 };
 
 export type TransactionInfo = {
@@ -12,6 +21,8 @@ export type TransactionInfo = {
 
 export type MultisigInfo = {
   address: string;
+  signers?: string[];
+  threshold?: number;
   transactionHash?: string;
   transactions: MultisigTransaction[];
 };
@@ -21,6 +32,11 @@ export type WalletInfo = {
   address?: string;
 };
 
+export type TokenInfo = {
+  symbol: string;
+  decimals: number;
+};
+
 export type MultisigTransaction = {
   nonce: number;
   to: string;
@@ -28,7 +44,7 @@ export type MultisigTransaction = {
   calldata_len: number;
   calldata: string[];
   executed: boolean;
-  threshold: number;
+  confirmations: number;
   latestTransactionHash?: string;
 };
 
@@ -49,3 +65,5 @@ export const pendingStatuses = [
 ];
 
 export type ComparisonRange = -1 | 0 | 1;
+
+export type NetworkName = "mainnet-alpha" | "goerli-alpha";

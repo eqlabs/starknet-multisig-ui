@@ -1,28 +1,20 @@
-import {
-  useStarknet
-} from "@starknet-react/core";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import {
-  Abi,
   CompiledContract, json, number
 } from "starknet";
+import { useSnapshot } from "valtio";
 import Button from "~/components/Button";
 import { Input, Select } from "~/components/Input";
 import Paragraph from "~/components/Paragraph";
-import { useContractFactory } from "~/hooks/deploy";
-import MultisigSource from "../../public/Multisig.json";
-import { styled } from "../../stitches.config";
+import { useContractDeployer } from "~/hooks/deploy";
+import { state } from "~/state";
 import { Field, Fieldset, Label, Legend } from "./Forms";
-import ModeToggle from "./ModeToggle";
-
-const Threshold = styled("div", {
-  padding: "0 0 $4",
-});
+import InnerContainer from "./InnerContainer";
 
 export function NewMultisig() {
-  const { account } = useStarknet();
   const router = useRouter();
+  const { walletInfo } = useSnapshot(state);
 
   // Compile the multisig contract on mount
   const [compiledMultisig, setCompiledMultisig] = useState<CompiledContract>();
@@ -41,39 +33,44 @@ export function NewMultisig() {
 
   // Input state
   const [signerThreshold, setSignerThreshold] = useState<number>(1);
-  const [totalSigners, setTotalSigners] = useState<number>(2);
+  const [totalSigners, setTotalSigners] = useState<number>(1);
   const [signers, setSigners] = useState<string[]>([]);
 
   const [deploying, setDeploying] = useState<boolean>(false);
 
-  const { deploy: deployMultisig } = useContractFactory({
+  const { deploy: deployMultisig } = useContractDeployer({
     compiledContract: compiledMultisig,
-    abi: (MultisigSource as any).abi as Abi,
   });
 
   // Prefill the first field with currently logged in wallet address
   useEffect(() => {
-    const emptySigners = [...Array(totalSigners).keys()].map((item) => "");
-    emptySigners[0] = account ?? "";
+    const emptySigners = [...Array(totalSigners).keys(), ""].map(() => "");
+    emptySigners[0] = walletInfo && walletInfo.address || "";
     setSigners(emptySigners);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [account]);
+  }, [walletInfo]);
 
   const onDeploy = async () => {
     const _deployMultisig = async () => {
       setDeploying(true);
+
+      // Construct constructor inputs as BigNumbers
       const bnSigners = signers.slice(0, signers.length - 1).map((o) => number.toBN(o));
       const calldata = [bnSigners.length, ...bnSigners, signerThreshold];
+
+      // Call the contract factory with deployment instructions
       const deployment = await deployMultisig({
         constructorCalldata: calldata,
       });
+
+      // Redirect the user to a pending deployment view upon deployment receipt
       if (deployment) {
-        router.push(`/wallet/${deployment.address}`)
+        router.push(`/multisig/${deployment.address}`)
       } else {
         setDeploying(false);
       }
     };
-    await _deployMultisig();
+    signers.length > 0 && await _deployMultisig();
   };
 
   const onThresholdChange = (value: string) => {
@@ -106,20 +103,20 @@ export function NewMultisig() {
 
   return (
     <div>
-      <ModeToggle />
-
       {!deploying ? 
-      <Fieldset>
-        <Legend as="h2">Add Signers</Legend>
-        <Paragraph css={{ color: "$textMuted" }}>
+      <Fieldset css={{gap: "0"}}>
+        <Legend as="h2">Create a new multisig</Legend>
+        <hr/>
+        <Paragraph>
           Your contract will have one or more signers. We have prefilled the
           first signer with your connected wallet details, but you are free to
           change this to a different signer.
         </Paragraph>
 
         {/* Inputs */}
+        <InnerContainer>
         {signers.map((signer, i) => (
-          <Field key={i} inactive={signers.length > 2 && i === totalSigners.valueOf() && signer === ""}>
+          <Field key={i} inactive={signers.length > 1 && i === totalSigners.valueOf() && signer === ""}>
             <Label>Signer {i + 1} address:</Label>
             <Input
               type="text"
@@ -129,42 +126,50 @@ export function NewMultisig() {
             ></Input>
           </Field>
         ))}
+        </InnerContainer>
 
-        <hr />
-        <Paragraph css={{ color: "$textMuted" }}>
+        <Paragraph>
           Specify how many of them have to confirm a transaction before it
           gets executed. In general, the more confirmations required, the more
           secure your contract is.
         </Paragraph>
-        <Threshold>
+
+        <InnerContainer css={{flexDirection: "row", justifyContent: "space-between", flexWrap: "wrap", gap: "$1", padding: "$2 $8"}}>
           <Paragraph
             css={{
               fontWeight: "500",
-              marginBottom: "$3",
             }}
           >
             Transaction requires the confirmation of
           </Paragraph>
-          <Select
-            css={{
-              margin: "0 $2 0 0",
-            }}
-            onChange={(e) => {
-              onThresholdChange(e.target.value);
-            }}
-            value={signerThreshold}
-          >
-            {[...Array(totalSigners).keys()].map((_, index) => {
-              const thresholdOption = index + 1
-              return <option value={thresholdOption.toString()} key={`thresholdOption-${thresholdOption.toString()}`}>{thresholdOption.toString()}</option>
-            })}
-          </Select>{" "}
-          of total {totalSigners} signers{" "}
-        </Threshold>
+          <div style={{display: "flex", flexDirection: "row", alignItems: "center"}}>
+            <Select
+              css={{
+                margin: "0 $2 0 0",
+                flexGrow: "0",
+              }}
+              onChange={(e) => {
+                onThresholdChange(e.target.value);
+              }}
+              value={signerThreshold}
+            >
+              {[...Array(totalSigners).keys()].map((_, index) => {
+                const thresholdOption = index + 1
+                return <option value={thresholdOption.toString()} key={`thresholdOption-${thresholdOption.toString()}`}>{thresholdOption.toString()}</option>
+              })}
+            </Select>{" "}
+            of {totalSigners} signers{" "}
+          </div>
+        </InnerContainer>
 
-        <Button fullWidth onClick={onDeploy}>
-          Deploy multisig contract
-        </Button>
+        <div style={{ display: "flex", flexDirection: "row", justifyContent: "space-between", gap: "1rem", marginTop: "1.5rem"}}>
+          <Button outline onClick={router.back}>
+            Go back
+          </Button>
+          <Button style={{flexGrow: "1"}} onClick={onDeploy}>
+            Deploy multisig contract
+          </Button>
+        </div>
       </Fieldset>
       : <div>Deploying...</div>}
     </div>

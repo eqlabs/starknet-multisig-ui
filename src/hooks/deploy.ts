@@ -1,29 +1,31 @@
-import { useStarknet } from "@starknet-react/core";
-import { useCallback, useEffect, useState } from "react";
+import { useAccount, useStarknet } from "@starknet-react/core";
+import { useCallback, useState } from "react";
 import {
   Abi,
   CompiledContract,
   Contract,
   ContractFactory,
-  Provider,
+  getChecksumAddress,
+  number,
   RawCalldata,
   validateAndParseAddress,
 } from "starknet";
-import { BigNumberish } from "starknet/dist/utils/number";
 import { state } from "~/state";
+import { updateTransactionStatus } from "~/state/utils";
+import { TransactionStatus } from "~/types";
+import { classHash } from "~/utils/config";
 
-interface UseContractFactoryArgs {
+interface UseContractDeployerArgs {
   compiledContract?: CompiledContract;
   abi?: Abi;
 }
 
 interface DeployArgs {
   constructorCalldata: RawCalldata;
-  addressSalt?: BigNumberish;
+  addressSalt?: number.BigNumberish;
 }
 
-interface UseContractFactory {
-  factory?: ContractFactory;
+interface UseContractDeployer {
   deploy: ({
     constructorCalldata,
     addressSalt,
@@ -31,37 +33,55 @@ interface UseContractFactory {
   contract?: Contract;
 }
 
-export function useContractFactory({
+export function useContractDeployer({
   compiledContract,
-  abi,
-}: UseContractFactoryArgs): UseContractFactory {
+}: UseContractDeployerArgs): UseContractDeployer {
+  const { account } = useAccount();
   const { library } = useStarknet();
-  const [factory, setFactory] = useState<ContractFactory | undefined>();
   const [contract, setContract] = useState<Contract | undefined>();
 
-  useEffect(() => {
-    if (compiledContract) {
-      setFactory(
-        new ContractFactory(compiledContract, library as Provider, abi)
-      );
-    }
-  }, [compiledContract, library, abi]);
-
   const deploy = useCallback(
-    async ({ constructorCalldata, addressSalt }: DeployArgs) => {
-      if (factory) {
-        const contract = await factory.deploy(constructorCalldata, addressSalt);
-        state.multisigs.push({
-          address: validateAndParseAddress(contract.address),
-          transactionHash: contract.deployTransactionHash,
-        });
-        setContract(contract);
-        return contract;
+    async ({ constructorCalldata }: DeployArgs) => {
+      try {
+        if (compiledContract && account) {
+          const factory = new ContractFactory(
+            compiledContract,
+            classHash,
+            account
+          );
+          const deployReceipt = await factory.deploy(constructorCalldata);
+          const deployedAddress = getChecksumAddress(
+            validateAndParseAddress(deployReceipt.address)
+          );
+
+          // Add the deployed multisig to state
+          state.multisigs.push({
+            address: deployedAddress,
+            transactionHash: deployReceipt.transaction_hash,
+            transactions: [],
+          });
+
+          updateTransactionStatus(
+            deployReceipt.transaction_hash,
+            TransactionStatus.NOT_RECEIVED
+          );
+
+          const contract = new Contract(
+            compiledContract.abi,
+            deployedAddress,
+            library
+          );
+
+          setContract(contract);
+          return contract;
+        }
+      } catch (_e) {
+        console.error(_e);
       }
       return undefined;
     },
-    [factory]
+    [account, compiledContract, library]
   );
 
-  return { factory, contract, deploy };
+  return { contract, deploy };
 }

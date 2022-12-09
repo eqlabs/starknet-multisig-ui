@@ -1,10 +1,11 @@
 import { proxy, subscribe } from "valtio";
-import { MultisigInfo, TransactionInfo, WalletInfo } from "~/types";
+import { MultisigInfo, TokenInfo, TransactionInfo, WalletInfo } from "~/types";
 
 export type State = {
   walletInfo: false | WalletInfo;
   multisigs: Array<MultisigInfo>;
   transactions: Array<TransactionInfo>;
+  tokenInfo: { [tokenAddress: string]: TokenInfo };
 };
 
 const storeKey = "starsign-state";
@@ -13,6 +14,7 @@ const defaultState: State = {
   walletInfo: false,
   multisigs: [],
   transactions: [],
+  tokenInfo: {},
 };
 
 const persistState = (state: State) => {
