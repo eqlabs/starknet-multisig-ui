@@ -1,21 +1,20 @@
-import {
-  useStarknet
-} from "@starknet-react/core";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import {
   CompiledContract, json, number
 } from "starknet";
+import { useSnapshot } from "valtio";
 import Button from "~/components/Button";
 import { Input, Select } from "~/components/Input";
 import Paragraph from "~/components/Paragraph";
 import { useContractDeployer } from "~/hooks/deploy";
+import { state } from "~/state";
 import { Field, Fieldset, Label, Legend } from "./Forms";
 import InnerContainer from "./InnerContainer";
 
 export function NewMultisig() {
-  const { account } = useStarknet();
   const router = useRouter();
+  const { walletInfo } = useSnapshot(state);
 
   // Compile the multisig contract on mount
   const [compiledMultisig, setCompiledMultisig] = useState<CompiledContract>();
@@ -46,10 +45,10 @@ export function NewMultisig() {
   // Prefill the first field with currently logged in wallet address
   useEffect(() => {
     const emptySigners = [...Array(totalSigners).keys(), ""].map(() => "");
-    emptySigners[0] = account ?? "";
+    emptySigners[0] = walletInfo && walletInfo.address || "";
     setSigners(emptySigners);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [account]);
+  }, [walletInfo]);
 
   const onDeploy = async () => {
     const _deployMultisig = async () => {

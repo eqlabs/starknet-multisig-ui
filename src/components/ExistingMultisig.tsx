@@ -1,13 +1,12 @@
 import * as Tabs from '@radix-ui/react-tabs';
-import {
-  useStarknet
-} from "@starknet-react/core";
 import { styled } from '@stitches/react';
 import Link from "next/link";
 import { useEffect, useState } from 'react';
 import { FiArrowLeft } from 'react-icons/fi';
 import { validateAndParseAddress } from 'starknet';
+import { useSnapshot } from 'valtio';
 import { useMultisigContract } from "~/hooks/multisigContractHook";
+import { state } from '~/state';
 import { findMultisig, findTransaction } from '~/state/utils';
 import { pendingStatuses } from '~/types';
 import { getVoyagerContractLink, getVoyagerTransactionLink } from '~/utils';
@@ -72,10 +71,10 @@ const ContractInfo = styled("div", {
 })
 
 export const ExistingMultisig = ({ contractAddress }: MultisigProps) => {
-  const { account } = useStarknet();
   const { contract: multisigContract, status, loading } = useMultisigContract(
     contractAddress, 20000
   );
+  const { walletInfo } = useSnapshot(state);
   
   const [firstLoad, setFirstLoad] = useState<boolean>(true)
   const [pendingStatus, setPendingStatus] = useState<boolean>(false)
@@ -110,7 +109,7 @@ export const ExistingMultisig = ({ contractAddress }: MultisigProps) => {
 
         <ContractInfo><PencilLine css={{stroke: "$text"}}/>{loading ? <SkeletonLoader /> : "Required signers: " + multisig?.threshold + "/" + multisig?.signers?.length}</ContractInfo>
 
-        <ContractInfo><User css={{stroke: "$text"}}/>{loading ? <SkeletonLoader /> : account && multisig?.signers?.includes(validateAndParseAddress(account)) ? "You are a signer of this multisig contract." : "You cannot sign transactions in this multisig contract."}</ContractInfo>
+        <ContractInfo><User css={{stroke: "$text"}}/>{loading ? <SkeletonLoader /> : walletInfo && walletInfo.address && multisig?.signers?.includes(validateAndParseAddress(walletInfo.address)) ? "You are a signer of this multisig contract." : "You cannot sign transactions in this multisig contract."}</ContractInfo>
 
         {multisig?.transactions && multisig.transactions.filter(tx => !tx.executed).length > 0 && (
           <>

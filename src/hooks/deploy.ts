@@ -1,9 +1,10 @@
-import { useStarknet } from "@starknet-react/core";
+import { useAccount, useStarknet } from "@starknet-react/core";
 import { useCallback, useState } from "react";
 import {
   Abi,
   CompiledContract,
   Contract,
+  ContractFactory,
   getChecksumAddress,
   number,
   RawCalldata,
@@ -12,6 +13,7 @@ import {
 import { state } from "~/state";
 import { updateTransactionStatus } from "~/state/utils";
 import { TransactionStatus } from "~/types";
+import { classHash } from "~/utils/config";
 
 interface UseContractDeployerArgs {
   compiledContract?: CompiledContract;
@@ -34,23 +36,20 @@ interface UseContractDeployer {
 export function useContractDeployer({
   compiledContract,
 }: UseContractDeployerArgs): UseContractDeployer {
-  const { account, library } = useStarknet();
+  const { account } = useAccount();
+  const { library } = useStarknet();
   const [contract, setContract] = useState<Contract | undefined>();
 
   const deploy = useCallback(
     async ({ constructorCalldata }: DeployArgs) => {
       try {
-        if (
-          compiledContract &&
-          account &&
-          compiledContract.program &&
-          compiledContract.entry_points_by_type
-        ) {
-          const deployReceipt: any = await library.deployContract({
-            contract: compiledContract,
-            constructorCalldata: constructorCalldata,
-          });
-
+        if (compiledContract && account) {
+          const factory = new ContractFactory(
+            compiledContract,
+            classHash,
+            account
+          );
+          const deployReceipt = await factory.deploy(constructorCalldata);
           const deployedAddress = getChecksumAddress(
             validateAndParseAddress(deployReceipt.address)
           );

@@ -1,4 +1,3 @@
-import { useStarknet } from "@starknet-react/core";
 import { AnimatePresence } from "framer-motion";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
@@ -21,8 +20,8 @@ const Multisigs = () => {
 }
 
 const Home: NextPage = () => {
-  const { account } = useStarknet();
   const router = useRouter();
+  const { walletInfo } = useSnapshot(state);
   return (
     <Box
       css={{
@@ -44,7 +43,7 @@ const Home: NextPage = () => {
         }}
       >
         <AnimatePresence exitBeforeEnter>
-          {account ? 
+          {walletInfo && walletInfo.address ? 
             <>
               <BorderedContainer
                 key="new-multisig-button"

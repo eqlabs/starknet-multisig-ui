@@ -1,4 +1,4 @@
-import { InjectedConnector } from "@starknet-react/core";
+import { Connector } from "@starknet-react/core";
 import { CSS } from "@stitches/react";
 import { Abi, Contract, getChecksumAddress, number, uint256, validateAndParseAddress } from "starknet";
 import { ArgentX, Braavos } from "~/components/Logos";
@@ -31,10 +31,11 @@ export const mapTargetHashToText = (hash: string): string => {
   return mapping;
 };
 
-export const mapWalletToText = (wallet: InjectedConnector): string => {
+export const mapWalletToText = (connector: Connector): string => {
   let walletName = "";
-  switch (wallet.id()) {
-    case "argent-x": {
+
+  switch (connector.id()) {
+    case "argentX": {
       walletName = "Argent X";
       break;
     }
@@ -43,9 +44,10 @@ export const mapWalletToText = (wallet: InjectedConnector): string => {
       break;
     }
     default: {
-      walletName = wallet.name();
+      walletName = connector.available() ? connector.name() : "";
     }
   }
+
   return walletName;
 };
 
@@ -55,7 +57,7 @@ export const mapWalletIdToIcon = (
 ): JSX.Element | undefined => {
   let icon: JSX.Element | undefined;
   switch (walletId) {
-    case "argent-x": {
+    case "argentX": {
       icon = <ArgentX css={css} />;
       break;
     }
@@ -153,7 +155,7 @@ export const truncateAddress = (
 ): string => {
   let validatedAddress = address;
   let substrLength = substringLength || 4;
-  
+
   try {
     validatedAddress = validateAndParseAddress(address);
   } catch (_e) {

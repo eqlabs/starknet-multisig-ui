@@ -1,8 +1,9 @@
-import { getInstalledInjectedConnectors, InjectedConnector, useStarknet } from "@starknet-react/core";
+import { Connector, useConnectors } from "@starknet-react/core";
 import { styled } from "@stitches/react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+import { AccountInterface } from "starknet";
 import Button from "~/components/Button";
 import Paragraph from "~/components/Paragraph";
 import { state } from "~/state";
@@ -16,19 +17,21 @@ maxWidth: "$4xl", color: "#FFFFFF" })
 
 export const ConnectWallet = () => {
   const router = useRouter();
-  const { account, connect } = useStarknet();
-  const [pendingWallet, setPendingWallet] = useState<InjectedConnector | undefined>();
+  const { connectors } = useConnectors();
+  const [pendingWallet, setPendingWallet] = useState<Connector | undefined>();
+  const [accountInterface, setAccountInterface] = useState<AccountInterface | undefined>();
 
-  const connectCallback = async (wallet: InjectedConnector) => {
-    setPendingWallet(wallet);
-    connect(wallet);
+  const connectCallback = async (connector: Connector) => {
+    const accountInterface = await connector.connect();
+    setPendingWallet(connector);
+    setAccountInterface(accountInterface);
   };
 
   useEffect(() => {
-    if (pendingWallet) {
-      state.walletInfo = { id: pendingWallet.id(), address: account }
+    if (pendingWallet && accountInterface) {
+      state.walletInfo = { id: pendingWallet.id(), address: accountInterface.address }
     }
-  }, [account, pendingWallet, router]);
+  }, [accountInterface, connectors, pendingWallet, router]);
 
   return (
     <FrontPageWrapper>
@@ -44,9 +47,9 @@ export const ConnectWallet = () => {
           </Paragraph>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-          {getInstalledInjectedConnectors().map(wallet => (
-            <Button size="md" key={wallet.id()} fullWidth style={{background: "#EFF4FB", color: "#000000", whiteSpace: "nowrap"}} onClick={() => connectCallback(wallet)}>
-              {mapWalletIdToIcon(wallet.id())} <span>Connect wallet ({mapWalletToText(wallet)})</span>
+          {connectors.map(connector => (
+            <Button size="md" key={connector.id()} fullWidth style={{background: "#EFF4FB", color: "#000000", whiteSpace: "nowrap"}} onClick={() => connectCallback(connector)}>
+              {mapWalletIdToIcon(connector.id())} <span>Connect wallet ({mapWalletToText(connector)})</span>
             </Button>
           ))}
           </div>

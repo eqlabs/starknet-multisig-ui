@@ -1,5 +1,5 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { useStarknet } from "@starknet-react/core";
+import { useConnectors } from "@starknet-react/core";
 import { styled } from '@stitches/react';
 import { useRouter } from "next/router";
 import { useCallback } from "react";
@@ -44,7 +44,7 @@ const Content = styled(DropdownMenu.Content, {
 
 const WalletDropdown = () => {
   const router = useRouter();
-  const { disconnect, account } = useStarknet();
+  const { disconnect } = useConnectors();
   const { transactions, walletInfo } = useSnapshot(state);
   
   const disconnectCallback = useCallback(() => {
@@ -54,14 +54,15 @@ const WalletDropdown = () => {
   }, [disconnect, router]);
 
   return (
-    account ? (
+    walletInfo && walletInfo.address ? (
       <DropdownMenu.Root>
         {/* TODO: Map the used wallet type to a corresponding wallet icon */}
         <Trigger>
           <div>{mapWalletIdToIcon(walletInfo && walletInfo.id ? walletInfo.id : "0")}</div>
-          <span>{truncateAddress(account, 12)}</span>
+          <span>{truncateAddress(walletInfo.address, 12)}</span>
           <Caret className="caret" css={{stroke: "#FFFFFF", strokeWidth: "2px" }} height="17"/>
         </Trigger>
+
         <DropdownMenu.Portal>
           <Content>
             <DropdownMenu.Item>
@@ -76,6 +77,7 @@ const WalletDropdown = () => {
             ))}</DropdownMenu.Item> */}
           </Content>
         </DropdownMenu.Portal>
+        
       </DropdownMenu.Root>
     ) : <></>
   )
