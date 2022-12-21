@@ -1,7 +1,7 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import {
-  CompiledContract, json, number
+  CompiledContract, json, stark
 } from "starknet";
 import { useSnapshot } from "valtio";
 import Button from "~/components/Button";
@@ -55,12 +55,14 @@ export function NewMultisig() {
       setDeploying(true);
 
       // Construct constructor inputs as BigNumbers
-      const bnSigners = signers.slice(0, signers.length - 1).map((o) => number.toBN(o));
-      const calldata = [bnSigners.length, ...bnSigners, signerThreshold];
+      const bnSigners = signers.slice(0, signers.length - 1);
+      const calldata = { signers_len: bnSigners.length.toString(), signers: bnSigners, threshold: signerThreshold.toString()};
+
+      console.log(calldata, compiledMultisig)
 
       // Call the contract factory with deployment instructions
       const deployment = await deployMultisig({
-        constructorCalldata: calldata,
+        constructorCalldata: stark.compileCalldata(calldata),
       });
 
       // Redirect the user to a pending deployment view upon deployment receipt

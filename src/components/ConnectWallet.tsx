@@ -17,14 +17,16 @@ maxWidth: "$4xl", color: "#FFFFFF" })
 
 export const ConnectWallet = () => {
   const router = useRouter();
-  const { connectors } = useConnectors();
+  const { connectors, connect } = useConnectors();
   const [pendingWallet, setPendingWallet] = useState<Connector | undefined>();
   const [accountInterface, setAccountInterface] = useState<AccountInterface | undefined>();
 
   const connectCallback = async (connector: Connector) => {
-    const accountInterface = await connector.connect();
+    connect(connector);
+    const accountInterface = await connector.account();
     setPendingWallet(connector);
-    setAccountInterface(accountInterface);
+    accountInterface && setAccountInterface(accountInterface);
+    console.log(accountInterface);
   };
 
   useEffect(() => {
