@@ -1,4 +1,4 @@
-import { InjectedConnector, StarknetConfig, StarknetProvider } from "@starknet-react/core";
+import { InjectedConnector, StarknetConfig } from "@starknet-react/core";
 import { ThemeProvider } from "next-themes";
 import type { AppProps } from "next/app";
 import NextHead from "next/head";
@@ -12,25 +12,23 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
     new InjectedConnector({ options: { id: 'argentX' }}),
   ]
   return (
-    <StarknetProvider defaultProvider={defaultProvider}>
-      <StarknetConfig connectors={connectors}>
-        <WalletListener />
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem={false}
-          value={{
-            light: "light",
-            dark: darkTheme.className,
-          }}
-        >
-          <NextHead>
-            <title>Starsign — StarkNet Multisig</title>
-          </NextHead>
-          <Component {...pageProps} />
-        </ThemeProvider>
-      </StarknetConfig>
-    </StarknetProvider>
+    <StarknetConfig connectors={connectors} defaultProvider={defaultProvider}>
+      <WalletListener />
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="dark"
+        enableSystem={false}
+        value={{
+          light: "light",
+          dark: darkTheme.className,
+        }}
+      >
+        <NextHead>
+          <title>Starsign — StarkNet Multisig</title>
+        </NextHead>
+        <Component {...pageProps} />
+      </ThemeProvider>
+    </StarknetConfig>
   );
 }
 
