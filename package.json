@@ -20,6 +20,7 @@
     "@types/lodash": "^4.14.185",
     "@xstate/react": "^3.0.0",
     "bn.js": "^5.2.0",
+    "cmdk": "^0.1.21",
     "dotenv": "^16.0.1",
     "framer-motion": "^6.2.9",
     "lodash": "^4.17.21",
