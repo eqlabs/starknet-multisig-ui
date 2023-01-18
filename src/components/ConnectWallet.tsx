@@ -17,7 +17,8 @@ maxWidth: "$4xl", color: "#FFFFFF" })
 
 export const ConnectWallet = () => {
   const router = useRouter();
-  const { connectors, connect } = useConnectors();
+  const { available, connect } = useConnectors();
+  
   const [pendingWallet, setPendingWallet] = useState<Connector | undefined>();
   const [accountInterface, setAccountInterface] = useState<AccountInterface | undefined>();
 
@@ -26,14 +27,13 @@ export const ConnectWallet = () => {
     const accountInterface = await connector.account();
     setPendingWallet(connector);
     accountInterface && setAccountInterface(accountInterface);
-    console.log(accountInterface);
   };
 
   useEffect(() => {
     if (pendingWallet && accountInterface) {
       state.walletInfo = { id: pendingWallet.id(), address: accountInterface.address }
     }
-  }, [accountInterface, connectors, pendingWallet, router]);
+  }, [accountInterface, pendingWallet, router]);
 
   return (
     <FrontPageWrapper>
@@ -49,7 +49,7 @@ export const ConnectWallet = () => {
           </Paragraph>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-          {connectors.map(connector => (
+          {available.map(connector => (
             <Button size="md" key={connector.id()} fullWidth style={{background: "#EFF4FB", color: "#000000", whiteSpace: "nowrap"}} onClick={() => connectCallback(connector)}>
               {mapWalletIdToIcon(connector.id())} <span>Connect wallet ({mapWalletToText(connector)})</span>
             </Button>
