@@ -1,4 +1,4 @@
-import { Connector, useConnectors } from "@starknet-react/core";
+import { connect } from "@argent/get-starknet";
 import { styled } from "@stitches/react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/router";
@@ -7,7 +7,6 @@ import { AccountInterface } from "starknet";
 import Button from "~/components/Button";
 import Paragraph from "~/components/Paragraph";
 import { state } from "~/state";
-import { mapWalletIdToIcon, mapWalletToText } from "~/utils";
 
 const WelcomeTitle = styled("h1", { fontSize: "$6xl", marginBottom: "$1" });
 const Subtitle = styled("h2", { fontSize: "$2xl", marginTop: "0", fontWeight: "normal" });
@@ -17,21 +16,22 @@ maxWidth: "$4xl", color: "#FFFFFF" })
 
 export const ConnectWallet = () => {
   const router = useRouter();
-  const { available, connect } = useConnectors();
   
   const [pendingWallet, setPendingWallet] = useState<Connector | undefined>();
   const [accountInterface, setAccountInterface] = useState<AccountInterface | undefined>();
 
-  const connectCallback = async (connector: Connector) => {
-    connect(connector);
-    const accountInterface = await connector.account();
-    setPendingWallet(connector);
-    accountInterface && setAccountInterface(accountInterface);
+  const connectCallback = async () => {
+    const wallet = await connect()
+    const success = await wallet?.enable()
+    if (wallet && success) {
+      setPendingWallet(wallet)
+      setAccountInterface(wallet.account)
+    }
   };
 
   useEffect(() => {
     if (pendingWallet && accountInterface) {
-      state.walletInfo = { id: pendingWallet.id(), address: accountInterface.address }
+      state.walletInfo = { id: pendingWallet.id, address: accountInterface.address }
     }
   }, [accountInterface, pendingWallet, router]);
 
@@ -49,15 +49,13 @@ export const ConnectWallet = () => {
           </Paragraph>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-          {available.map(connector => (
-            <Button size="md" key={connector.id()} fullWidth style={{background: "#EFF4FB", color: "#000000", whiteSpace: "nowrap"}} onClick={() => connectCallback(connector)}>
-              {mapWalletIdToIcon(connector.id())} <span>Connect wallet ({mapWalletToText(connector)})</span>
+            <Button size="md" fullWidth style={{background: "#EFF4FB", color: "#000000", whiteSpace: "nowrap"}} onClick={connectCallback}>
+              Connect wallet
             </Button>
-          ))}
           </div>
         </div>
       </>) : (<Paragraph css={{ fontSize: "$lg", margin: "$6 0", color: "#FFFFFF" }}>
-        Unlock your {mapWalletToText(pendingWallet)} wallet.
+        Unlock your wallet.
       </Paragraph>)}
     </FrontPageWrapper>
   );

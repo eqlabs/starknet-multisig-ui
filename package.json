@@ -9,13 +9,12 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@argent/get-starknet": "^3.0",
+    "@argent/get-starknet": "^5.2.0",
     "@radix-ui/colors": "^0.1.8",
     "@radix-ui/react-dropdown-menu": "^2.0.1",
     "@radix-ui/react-progress": "^0.1.4",
     "@radix-ui/react-select": "^0.1.1",
     "@radix-ui/react-tabs": "^0.1.5",
-    "@starknet-react/core": "^0.14.8",
     "@stitches/react": "^1.2.8",
     "@types/lodash": "^4.14.185",
     "@xstate/react": "^3.0.0",
