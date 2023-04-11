@@ -1626,6 +1626,11 @@ get-nonce@^1.0.0:
   resolved "https://registry.yarnpkg.com/get-nonce/-/get-nonce-1.0.1.tgz#fdf3f0278073820d2ce9426c18f07481b1e0cdf3"
   integrity sha512-FJhYRoDaiatfEkUK8HKlicmu/3SGFD51q3itKDGoSTysQJBnfOcxU5GxnhE1E6soB76MbT0MBtnKJuXyAx+96Q==
 
+get-starknet-core@^2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/get-starknet-core/-/get-starknet-core-2.0.1.tgz#bd08ada12b58e1c5db94ccee04eb716dfa35fb5f"
+  integrity sha512-uYI8wn9a2iyIfJRSJeZvoIvAWq495AKP5U154kFf/Izet+nP/VilTxKUG6CxdUwe9KuBpG0UZE9ODIxPgBYo2w==
+
 get-starknet@^1.0.0:
   version "1.5.0"
   resolved "https://registry.yarnpkg.com/get-starknet/-/get-starknet-1.5.0.tgz#b6df1b18cd8cb33c9277b75c32aa71c412c79ed0"

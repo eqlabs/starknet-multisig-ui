@@ -22,6 +22,7 @@
     "cmdk": "^0.1.21",
     "dotenv": "^16.0.1",
     "framer-motion": "^6.2.9",
+    "get-starknet-core": "^2.0.1",
     "lodash": "^4.17.21",
     "next": "12.0.10",
     "next-themes": "^0.1.1",

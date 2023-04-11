@@ -1,4 +1,3 @@
-import { useStarknet } from "@starknet-react/core";
 import { styled } from "@stitches/react";
 import throttle from "lodash/throttle";
 import { useCallback, useEffect, useState } from "react";
@@ -61,9 +60,8 @@ type TransactionProps = {
 }
 
 const Transaction = ({ multisigContract, threshold, transaction }: TransactionProps) => {
-  const { library: provider } = useStarknet();
   const [idleDelay, activeDelay] = [60000, 5000]
-  const { transactions } = useSnapshot(state);
+  const { transactions, wallet } = useSnapshot(state);
 
   const cachedTransaction = transactions.find(tx => tx.hash === transaction.latestTransactionHash);
 
@@ -76,9 +74,9 @@ const Transaction = ({ multisigContract, threshold, transaction }: TransactionPr
     let latestStatus: TransactionStatus = TransactionStatus.NOT_RECEIVED;
 
     const getLatestStatus = async () => {
-      if (multisigContract && transaction && transaction.latestTransactionHash && transaction.latestTransactionHash !== "") {
+      if (multisigContract && transaction && wallet && transaction.latestTransactionHash && transaction.latestTransactionHash !== "") {
         // Get the latest transaction status and stop polling if it has been finalized
-        const response = await provider.getTransactionReceipt(transaction.latestTransactionHash);
+        const response = await wallet.provider.getTransactionReceipt(transaction.latestTransactionHash);
         latestStatus = response.status as TransactionStatus;
 
         // Update transaction with newest status
@@ -111,7 +109,7 @@ const Transaction = ({ multisigContract, threshold, transaction }: TransactionPr
     return () => {
       heartbeat && clearInterval(heartbeat);
     };
-  }, [activeDelay, cachedTransaction, idleDelay, multisigContract, provider, transaction])
+  }, [activeDelay, cachedTransaction, idleDelay, multisigContract, transaction, wallet])
 
   const [tokenSymbol, setTokenSymbol] = useState<string>("");
   useEffect(() => {

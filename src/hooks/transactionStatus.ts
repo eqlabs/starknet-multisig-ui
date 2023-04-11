@@ -1,4 +1,3 @@
-import { useStarknet } from "@starknet-react/core";
 import { useEffect, useState } from "react";
 import { useSnapshot } from "valtio";
 import { state } from "~/state";
@@ -10,13 +9,11 @@ export const useTransaction = (
   transactionHash?: string,
   polling?: number
 ): { transaction: TransactionInfo | null; loading: boolean } => {
-  const { library: provider } = useStarknet();
-
   const pollingInterval = polling || 2000;
 
   const [loading, setLoading] = useState<boolean>(true);
 
-  const { transactions } = useSnapshot(state);
+  const { transactions, wallet } = useSnapshot(state);
 
   useEffect(() => {
     let heartbeat: NodeJS.Timer | false;
@@ -25,8 +22,10 @@ export const useTransaction = (
       if (transactionHash && transactionHash !== "") {
         let tx_status;
 
-        const response = await provider.getTransactionReceipt(transactionHash);
-        tx_status = response.status as TransactionStatus;
+        const response = await wallet?.provider.getTransactionReceipt(
+          transactionHash
+        );
+        tx_status = response?.status as TransactionStatus;
         if (compareStatuses(tx_status, TransactionStatus.ACCEPTED_ON_L1) >= 0) {
           heartbeat && clearInterval(heartbeat);
         }
@@ -44,7 +43,7 @@ export const useTransaction = (
     return () => {
       heartbeat && clearInterval(heartbeat);
     };
-  }, [transactionHash, polling, provider, pollingInterval]);
+  }, [transactionHash, polling, pollingInterval, wallet?.provider]);
 
   return {
     transaction: transactions.find((tx) => tx.hash === transactionHash) || null,

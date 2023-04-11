@@ -1,6 +1,7 @@
-import { useContract } from "@starknet-react/core";
 import { useEffect, useState } from "react";
 import { Abi, Contract, getChecksumAddress, hash, number, uint256, validateAndParseAddress } from "starknet";
+import { useSnapshot } from "valtio";
+import { state } from "~/state";
 import { addMultisigTransaction, getTokenInfo } from "~/state/utils";
 import { MultisigTransaction } from "~/types";
 import { fetchTokenBalance, parseAmount, parseMultisigTransaction } from "~/utils";
@@ -15,6 +16,8 @@ const Erc20Transaction = ({multisigContract}: {multisigContract?: Contract}) => 
   const [targetAddress, setTargetAddress] = useState<string>("");
   const [recipient, setRecipient] = useState<string>("");
   const [amount, setAmount] = useState<string>("");
+  
+  const { wallet } = useSnapshot(state);
   
   const submit = async () => {
     if (multisigContract) {
@@ -38,10 +41,11 @@ const Erc20Transaction = ({multisigContract}: {multisigContract?: Contract}) => 
     }
   };
   
-  const { contract: targetContract } = useContract({
-    abi: Source.abi as Abi,
-    address: targetAddress,
-  });
+  const targetContract = new Contract(
+    Source.abi as Abi,
+    targetAddress,
+    wallet?.account
+  );
 
   const [tokenInfo, setTokenInfo] = useState<{symbol: string | undefined, balance: string | undefined, decimals: number | undefined} | undefined | null>();
   useEffect(() => {
@@ -56,7 +60,7 @@ const Erc20Transaction = ({multisigContract}: {multisigContract?: Contract}) => 
       }
     }
     multisigContract && getToken()
-  }, [multisigContract, multisigContract?.address, targetAddress, targetContract])
+  }, [multisigContract, multisigContract?.address, targetAddress])
 
   return (
     <Fieldset>

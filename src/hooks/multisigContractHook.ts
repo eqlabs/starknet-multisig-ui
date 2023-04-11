@@ -1,4 +1,3 @@
-import { useStarknet } from "@starknet-react/core";
 import throttle from "lodash/throttle";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -9,9 +8,10 @@ import {
   number,
   validateAndParseAddress,
 } from "starknet";
+import { useSnapshot } from "valtio";
 import { state } from "~/state";
 import { addMultisigTransaction, updateMultisigInfo } from "~/state/utils";
-import { pendingStatuses, TransactionStatus } from "~/types";
+import { TransactionStatus, pendingStatuses } from "~/types";
 import { getMultisigTransactionInfo } from "~/utils";
 import Source from "../../public/Multisig.json";
 import { useTransaction } from "./transactionStatus";
@@ -26,11 +26,11 @@ export const useMultisigContract = (
 } => {
   const pollingInterval = polling || 20000;
 
-  const { library: provider } = useStarknet();
-
   const [loading, setLoading] = useState<boolean>(false);
   const [transactionCount, setTransactionCount] = useState<number>(0);
   const [contract, setContract] = useState<Contract | undefined>();
+
+  const { wallet } = useSnapshot(state);
 
   const validatedAddress = useMemo(
     () => validateAndParseAddress(getChecksumAddress(address)),
@@ -54,14 +54,14 @@ export const useMultisigContract = (
         const multisigContract = new Contract(
           Source.abi as Abi,
           validatedAddress,
-          provider
+          wallet?.provider
         );
         setContract(multisigContract);
       } catch (_e) {
         console.error(_e);
       }
     }
-  }, [provider, validatedAddress]);
+  }, [validatedAddress, wallet?.provider]);
 
   // Poll for transactionCount
   useEffect(() => {

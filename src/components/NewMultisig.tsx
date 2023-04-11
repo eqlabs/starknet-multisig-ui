@@ -63,6 +63,8 @@ export function NewMultisig() {
         constructorCalldata: calldata,
       });
 
+      console.log(calldata, bnSigners, deployment)
+
       // Redirect the user to a pending deployment view upon deployment receipt
       if (deployment) {
         router.push(`/multisig/${deployment.address}`)

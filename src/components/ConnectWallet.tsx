@@ -1,4 +1,4 @@
-import { connect } from "@argent/get-starknet";
+import { IStarknetWindowObject, connect } from "@argent/get-starknet";
 import { styled } from "@stitches/react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/router";
@@ -17,12 +17,15 @@ maxWidth: "$4xl", color: "#FFFFFF" })
 export const ConnectWallet = () => {
   const router = useRouter();
   
-  const [pendingWallet, setPendingWallet] = useState<Connector | undefined>();
+  const [pendingWallet, setPendingWallet] = useState<IStarknetWindowObject | undefined>();
   const [accountInterface, setAccountInterface] = useState<AccountInterface | undefined>();
 
   const connectCallback = async () => {
     const wallet = await connect()
     const success = await wallet?.enable()
+
+    console.log(success, wallet, wallet?.account.declare, wallet?.account.deploy, wallet?.account.declareDeploy)
+    
     if (wallet && success) {
       setPendingWallet(wallet)
       setAccountInterface(wallet.account)

@@ -1,15 +1,15 @@
-import { useAccount, useStarknet } from "@starknet-react/core";
 import { useCallback, useState } from "react";
 import {
   Abi,
   CompiledContract,
   Contract,
   ContractFactory,
+  RawCalldata,
   getChecksumAddress,
   number,
-  RawCalldata,
   validateAndParseAddress,
 } from "starknet";
+import { useSnapshot } from "valtio";
 import { state } from "~/state";
 import { updateTransactionStatus } from "~/state/utils";
 import { TransactionStatus } from "~/types";
@@ -36,18 +36,17 @@ interface UseContractDeployer {
 export function useContractDeployer({
   compiledContract,
 }: UseContractDeployerArgs): UseContractDeployer {
-  const { account } = useAccount();
-  const { library } = useStarknet();
   const [contract, setContract] = useState<Contract | undefined>();
+  const { wallet } = useSnapshot(state);
 
   const deploy = useCallback(
     async ({ constructorCalldata }: DeployArgs) => {
       try {
-        if (compiledContract && account) {
+        if (compiledContract && wallet) {
           const factory = new ContractFactory(
             compiledContract,
             classHash,
-            account
+            wallet.account
           );
           const deployReceipt = await factory.deploy(constructorCalldata);
           const deployedAddress = getChecksumAddress(
@@ -69,7 +68,7 @@ export function useContractDeployer({
           const contract = new Contract(
             compiledContract.abi,
             deployedAddress,
-            library
+            wallet.provider
           );
 
           setContract(contract);
@@ -80,7 +79,7 @@ export function useContractDeployer({
       }
       return undefined;
     },
-    [account, compiledContract, library]
+    [compiledContract, wallet]
   );
 
   return { contract, deploy };

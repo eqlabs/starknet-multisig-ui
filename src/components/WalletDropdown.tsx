@@ -1,5 +1,4 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { useConnectors } from "@starknet-react/core";
 import { styled } from '@stitches/react';
 import { useRouter } from "next/router";
 import { useCallback } from "react";
@@ -44,14 +43,12 @@ const Content = styled(DropdownMenu.Content, {
 
 const WalletDropdown = () => {
   const router = useRouter();
-  const { disconnect } = useConnectors();
   const { transactions, walletInfo } = useSnapshot(state);
   
   const disconnectCallback = useCallback(() => {
-    disconnect();
     state.walletInfo = false;
     router.push("/");
-  }, [disconnect, router]);
+  }, [router]);
 
   return (
     walletInfo && walletInfo.address ? (

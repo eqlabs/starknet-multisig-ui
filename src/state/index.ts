@@ -1,8 +1,10 @@
+import { IStarknetWindowObject } from "@argent/get-starknet/dist";
 import { proxy, subscribe } from "valtio";
 import { MultisigInfo, TokenInfo, TransactionInfo, WalletInfo } from "~/types";
 
 export type State = {
   walletInfo: false | WalletInfo;
+  wallet?: IStarknetWindowObject;
   multisigs: Array<MultisigInfo>;
   transactions: Array<TransactionInfo>;
   tokenInfo: { [tokenAddress: string]: TokenInfo };
@@ -12,6 +14,7 @@ const storeKey = "starsign-state";
 
 const defaultState: State = {
   walletInfo: false,
+  wallet: undefined,
   multisigs: [],
   transactions: [],
   tokenInfo: {},
