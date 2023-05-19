@@ -1,5 +1,5 @@
-import { Connector } from "@starknet-react/core";
 import { CSS } from "@stitches/react";
+import { StarknetWindowObject } from "get-starknet-core";
 import { Abi, Contract, getChecksumAddress, number, uint256, validateAndParseAddress } from "starknet";
 import { ArgentX, Braavos } from "~/components/Logos";
 import {
@@ -31,10 +31,10 @@ export const mapTargetHashToText = (hash: string): string => {
   return mapping;
 };
 
-export const mapWalletToText = (connector: Connector): string => {
+export const mapWalletToText = (connector: StarknetWindowObject): string => {
   let walletName = "";
 
-  switch (connector.id()) {
+  switch (connector.id) {
     case "argentX": {
       walletName = "Argent X";
       break;
@@ -44,7 +44,7 @@ export const mapWalletToText = (connector: Connector): string => {
       break;
     }
     default: {
-      walletName = connector.available() ? connector.name() : "";
+      walletName = connector.name || "";
     }
   }
 
