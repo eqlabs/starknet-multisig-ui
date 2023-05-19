@@ -6,28 +6,30 @@ import { state } from "~/state";
 
 const WalletListener = () => {
   const router = useRouter();
-  const { walletInfo, wallet } = useSnapshot(state);
+  const { walletInfo, accountInterface } = useSnapshot(state);
   useEffect(() => {
     const reconnect = async () => {
       const availableWallets = await core.getAvailableWallets()
-      
-      if (!wallet?.account && !walletInfo) {
+      const connected = availableWallets.find(wallet => wallet.isConnected)
+
+      if (!accountInterface && !walletInfo) {
         router.asPath !== "/" && router.push("/")
-      } else if (walletInfo && !walletInfo.address && wallet?.account) {
-        state.walletInfo = { ...walletInfo, address: wallet.account.address }
-      } else if (walletInfo && walletInfo.id && !wallet?.account) {
+      } else if (!connected && walletInfo && walletInfo.id) {
+        console.log("ebin!", walletInfo)
         const connector = availableWallets.find((wallet) => wallet.id === walletInfo.id)
         if (connector) {
           connector.enable().then((connectedAccount) => {
             state.walletInfo = { ...walletInfo, address: connectedAccount.toString() }
+            state.accountInterface = connector.account
           });
         } else {
           router.asPath !== "/" && router.push("/")
         }
       }
     }
+    
     reconnect()
-  }, [router, wallet?.account, walletInfo])
+  }, [accountInterface, router, walletInfo])
   
   return <></>
 }
