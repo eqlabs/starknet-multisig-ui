@@ -15,7 +15,6 @@ const WalletListener = () => {
       if (!accountInterface && !walletInfo) {
         router.asPath !== "/" && router.push("/")
       } else if (!connected && walletInfo && walletInfo.id) {
-        console.log("ebin!", walletInfo)
         const connector = availableWallets.find((wallet) => wallet.id === walletInfo.id)
         if (connector) {
           connector.enable().then((connectedAccount) => {

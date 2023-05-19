@@ -1,19 +1,9 @@
-import { useCallback, useState } from "react";
-import {
-  Abi,
-  CompiledContract,
-  Contract,
-  ContractFactory,
-  RawCalldata,
-  getChecksumAddress,
-  number,
-  validateAndParseAddress,
-} from "starknet";
+import { useCallback } from "react";
+import { Abi, CompiledContract, Contract, RawCalldata, number } from "starknet";
 import { useSnapshot } from "valtio";
 import { state } from "~/state";
-import { updateTransactionStatus } from "~/state/utils";
-import { TransactionStatus } from "~/types";
-import { classHash } from "~/utils/config";
+import { classHash, universalDeployerAddress } from "~/utils/config";
+import universalDeployerAbi from "../../public/UniversalDeployer.json";
 
 interface UseContractDeployerArgs {
   compiledContract?: CompiledContract;
@@ -29,58 +19,41 @@ interface UseContractDeployer {
   deploy: ({
     constructorCalldata,
     addressSalt,
-  }: DeployArgs) => Promise<Contract | undefined>;
-  contract?: Contract;
+  }: DeployArgs) => Promise<string | undefined>;
+  transaction?: string;
 }
 
 export function useContractDeployer({
   compiledContract,
 }: UseContractDeployerArgs): UseContractDeployer {
-  const [contract, setContract] = useState<Contract | undefined>();
-  const { wallet } = useSnapshot(state);
+  const { accountInterface } = useSnapshot(state);
 
   const deploy = useCallback(
     async ({ constructorCalldata }: DeployArgs) => {
       try {
-        if (compiledContract && wallet) {
-          const factory = new ContractFactory(
-            compiledContract,
+        if (compiledContract && accountInterface) {
+          const universalDeployer = new Contract(
+            universalDeployerAbi,
+            universalDeployerAddress,
+            accountInterface
+          );
+
+          const transaction = await universalDeployer.deployContract(
             classHash,
-            wallet.account
-          );
-          const deployReceipt = await factory.deploy(constructorCalldata);
-          const deployedAddress = getChecksumAddress(
-            validateAndParseAddress(deployReceipt.address)
+            13372341142,
+            1,
+            constructorCalldata
           );
 
-          // Add the deployed multisig to state
-          state.multisigs.push({
-            address: deployedAddress,
-            transactionHash: deployReceipt.transaction_hash,
-            transactions: [],
-          });
-
-          updateTransactionStatus(
-            deployReceipt.transaction_hash,
-            TransactionStatus.NOT_RECEIVED
-          );
-
-          const contract = new Contract(
-            compiledContract.abi,
-            deployedAddress,
-            wallet.provider
-          );
-
-          setContract(contract);
-          return contract;
+          return transaction.transaction_hash;
         }
       } catch (_e) {
         console.error(_e);
       }
       return undefined;
     },
-    [compiledContract, wallet]
+    [accountInterface, compiledContract]
   );
 
-  return { contract, deploy };
+  return { deploy };
 }

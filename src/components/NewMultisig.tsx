@@ -56,18 +56,16 @@ export function NewMultisig() {
 
       // Construct constructor inputs as BigNumbers
       const bnSigners = signers.slice(0, signers.length - 1);
-      const calldata = [bnSigners, signerThreshold.toString()];
+      const calldata = [bnSigners.length.toString(), ...bnSigners, signerThreshold.toString()];
 
       // Call the contract factory with deployment instructions
-      const deployment = await deployMultisig({
+      const deploymentTx = await deployMultisig({
         constructorCalldata: calldata,
       });
 
-      console.log(calldata, bnSigners, deployment)
-
       // Redirect the user to a pending deployment view upon deployment receipt
-      if (deployment) {
-        router.push(`/multisig/${deployment.address}`)
+      if (deploymentTx) {
+        router.push(`/deployment/${deploymentTx}`)
       } else {
         setDeploying(false);
       }

@@ -24,9 +24,7 @@ export const ConnectWallet = () => {
     const wallet = await connect()
     const success = await wallet?.enable()
 
-    console.log(success, wallet, wallet?.account.declare, wallet?.account.deploy, wallet?.account.declareDeploy)
-    
-    if (wallet && success) {
+    if (!!wallet && !!success) {
       setPendingWallet(wallet)
       setAccountInterface(wallet.account)
     }
@@ -35,6 +33,7 @@ export const ConnectWallet = () => {
   useEffect(() => {
     if (pendingWallet && accountInterface) {
       state.walletInfo = { id: pendingWallet.id, address: accountInterface.address }
+      state.accountInterface = accountInterface
     }
   }, [accountInterface, pendingWallet, router]);
 

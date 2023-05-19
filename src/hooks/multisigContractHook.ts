@@ -71,20 +71,14 @@ export const useMultisigContract = (
 
     const getTransactionCount = async () => {
       try {
-        // Poll only if the contract itself is deployed
-        if (
-          transaction?.status &&
-          !pendingStatuses.includes(transaction?.status as TransactionStatus)
-        ) {
-          const { res } = (await contract?.get_transactions_len()) || {
-            transactions_len: number.toBN(0),
-          };
+        const { res } = (await contract?.get_transactions_len()) || {
+          transactions_len: number.toBN(0),
+        };
 
-          // Only update the state if there has been a change
-          if (res && res.toNumber() !== previous) {
-            setTransactionCount(res.toNumber());
-            previous = res.toNumber();
-          }
+        // Only update the state if there has been a change
+        if (res && res.toNumber() !== previous) {
+          setTransactionCount(res.toNumber());
+          previous = res.toNumber();
         }
       } catch (e) {
         console.error(e);

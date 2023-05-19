@@ -9,9 +9,8 @@ import { useMultisigContract } from "~/hooks/multisigContractHook";
 import { state } from '~/state';
 import { findMultisig, findTransaction } from '~/state/utils';
 import { pendingStatuses } from '~/types';
-import { getVoyagerContractLink, getVoyagerTransactionLink } from '~/utils';
+import { getVoyagerContractLink } from '~/utils';
 import ArbitraryTransaction from './ArbitraryTransaction';
-import DeploymentStatus from './DeploymentStatus';
 import Erc20Transaction from './Erc20Transaction';
 import { Legend } from "./Forms";
 import { Hourglass, Note, PencilLine, SquareArrow, User } from './Icons';
@@ -80,9 +79,8 @@ export const ExistingMultisig = ({ contractAddress }: MultisigProps) => {
   const [pendingStatus, setPendingStatus] = useState<boolean>(false)
 
   const multisig = findMultisig(contractAddress)
-
   const transactionFound = multisig?.transactionHash
-  const transactionLink = getVoyagerTransactionLink(transactionFound || "");
+  
   const contractLink = getVoyagerContractLink(contractAddress);
   const deployTransaction = findTransaction(transactionFound);
 
@@ -102,7 +100,7 @@ export const ExistingMultisig = ({ contractAddress }: MultisigProps) => {
 
   return (
     <>
-      {!pendingStatus ? (<>
+      {!pendingStatus && (<>
         <ContractInfo css={{marginTop: "0", marginBottom: "$4"}}><Link href="/" passHref><FiArrowLeft style={{cursor: "pointer"}} size={"27px"}/></Link><Legend as="h2">Multisig Contract</Legend></ContractInfo>
 
         <ContractInfo><Note css={{stroke: "$text"}}/><Link href={contractLink}>{contractAddress}</Link></ContractInfo>
@@ -138,15 +136,7 @@ export const ExistingMultisig = ({ contractAddress }: MultisigProps) => {
             </Tabs.Content>
           </Tabs.Root>
         </InnerContainer>
-      </>
-      ) : <>
-        <div style={{display: "flex", flexDirection: "row", justifyContent: "space-between"}}>
-          <span>Deploying...</span>
-          <Link href={transactionFound ? transactionLink : contractLink}>{transactionFound ? "See transaction on Voyager" : "See contract on Voyager"}</Link>
-        </div>
-
-        <DeploymentStatus status={status} />
-      </>}
+      </>)}
     </>
   );
 }
