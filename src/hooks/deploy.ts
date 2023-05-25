@@ -1,5 +1,12 @@
 import { useCallback } from "react";
-import { Abi, CompiledContract, Contract, RawCalldata, number } from "starknet";
+import {
+  Abi,
+  CompiledContract,
+  Contract,
+  RawCalldata,
+  number,
+  stark,
+} from "starknet";
 import { useSnapshot } from "valtio";
 import { state } from "~/state";
 import { classHash, universalDeployerAddress } from "~/utils/config";
@@ -38,11 +45,13 @@ export function useContractDeployer({
             accountInterface
           );
 
+          const salt = stark.randomAddress();
+
           const transaction = await universalDeployer.deployContract(
-            classHash,
-            13372341142,
-            1,
-            constructorCalldata
+            classHash, // Class hash
+            salt, // Salt
+            1, // Unique address true/false
+            constructorCalldata // Calldata
           );
 
           return transaction.transaction_hash;
