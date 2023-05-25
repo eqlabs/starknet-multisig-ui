@@ -22,7 +22,7 @@ const Deployment = ({tx}: DeploymentProps) => {
   const router = useRouter();
 
   useEffect(() => {
-    const deployedAddress = receipt?.events && receipt.events[0]?.from_address;
+    const deployedAddress = receipt?.events && receipt.events[1]?.from_address;
     if (deployedAddress) {
       // Add the deployed multisig to state
       state.multisigs.push({
