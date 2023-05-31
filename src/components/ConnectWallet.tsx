@@ -22,7 +22,7 @@ export const ConnectWallet = () => {
 
   const connectCallback = async () => {
     const wallet = await connect()
-    const success = await wallet?.enable()
+    const success = wallet?.enable && await wallet.enable()
 
     if (!!wallet && !!success) {
       setPendingWallet(wallet)
