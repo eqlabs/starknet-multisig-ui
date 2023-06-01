@@ -30,7 +30,7 @@ export const useMultisigContract = (
   const [transactionCount, setTransactionCount] = useState<number>(0);
   const [contract, setContract] = useState<Contract | undefined>();
 
-  const { wallet } = useSnapshot(state);
+  const { accountInterface } = useSnapshot(state);
 
   const validatedAddress = useMemo(
     () => validateAndParseAddress(getChecksumAddress(address)),
@@ -49,19 +49,19 @@ export const useMultisigContract = (
 
   // Fetch and set the multisig contract to state
   useEffect(() => {
-    if (validatedAddress) {
+    if (validatedAddress && accountInterface) {
       try {
         const multisigContract = new Contract(
           Source.abi as Abi,
           validatedAddress,
-          wallet?.provider
+          accountInterface
         );
         setContract(multisigContract);
       } catch (_e) {
-        console.error(_e);
+        console.warn(_e);
       }
     }
-  }, [validatedAddress, wallet?.provider]);
+  }, [validatedAddress, accountInterface]);
 
   // Poll for transactionCount
   useEffect(() => {
@@ -81,7 +81,10 @@ export const useMultisigContract = (
           previous = res.toNumber();
         }
       } catch (e) {
-        console.error(e);
+        console.warn(
+          "Transaction count could not be fetched (probably due to an unitialized wallet): ",
+          e
+        );
       }
     };
 
@@ -95,9 +98,7 @@ export const useMultisigContract = (
 
   const fetchInfo = useMemo(
     () =>
-      contract &&
-      transaction?.status &&
-      !pendingStatuses.includes(transaction?.status as TransactionStatus)
+      contract
         ? throttle(async () => {
             !cachedMultisig && setLoading(true);
             try {
@@ -134,7 +135,7 @@ export const useMultisigContract = (
             setLoading(false);
           }, 5000)
         : () => {},
-    [cachedMultisig, contract, transaction?.status, validatedAddress]
+    [cachedMultisig, contract, validatedAddress]
   );
 
   // Fetcher for transactionCount

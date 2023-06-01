@@ -2,14 +2,16 @@ import { AnimatePresence } from "framer-motion";
 import { GetServerSideProps } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
+import { getChecksumAddress, validateAndParseAddress } from "starknet";
 import BorderedContainer from "~/components/BorderedContainer";
 import Box from "~/components/Box";
 import DeploymentStatus from "~/components/DeploymentStatus";
 import Header from "~/components/Header";
 import { useTransaction } from "~/hooks/transactionStatus";
 import { state } from "~/state";
-import { TransactionStatus } from "~/types";
+import { findMultisig } from "~/state/utils";
+import { TransactionStatus, pendingStatuses } from "~/types";
 import { getVoyagerTransactionLink } from "~/utils";
 
 type DeploymentProps = {
@@ -21,20 +23,29 @@ const Deployment = ({tx}: DeploymentProps) => {
   const { transaction, receipt } = useTransaction(tx, 5000);
   const router = useRouter();
 
-  useEffect(() => {
-    const deployedAddress = receipt?.events && receipt.events[1]?.from_address;
-    if (deployedAddress) {
-      // Add the deployed multisig to state
-      state.multisigs.push({
-        address: deployedAddress,
-        transactionHash: receipt.transaction_hash,
-        transactions: [],
-      });
+  // Listens to events from the receipt and parses the address from the UDC when the transaction reaches PENDING status
+  const getParsedAddress = useCallback(() => {
+    const address = receipt?.events && receipt.events[1]?.from_address;
+    const parsedAddress = validateAndParseAddress(getChecksumAddress(address));
+    return parsedAddress;
+  }, [receipt?.events])
 
-      // Redirect to the deployed multisig
-      router.push(`/multisig/${deployedAddress}`);
+  // Listens to the receipt and adds the deployed multisig to state and redirects to it when it is available on L2
+  useEffect(() => {
+    const address = getParsedAddress();
+    if (address && receipt) {
+      if (!findMultisig(address)) {
+        state.multisigs.push({
+          address: address,
+          transactionHash: receipt.transaction_hash,
+          transactions: [],
+        });
+      }
+      if (!pendingStatuses.includes(receipt.status as TransactionStatus)) {
+        router.push(`/multisig/${address}`);
+      }
     }
-  }, [receipt, router])
+  }, [getParsedAddress, receipt, router])
 
   return <Box
     css={{

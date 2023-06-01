@@ -1,9 +1,9 @@
 import * as Tabs from '@radix-ui/react-tabs';
 import { styled } from '@stitches/react';
 import Link from "next/link";
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { FiArrowLeft } from 'react-icons/fi';
-import { validateAndParseAddress } from 'starknet';
+import { getChecksumAddress, validateAndParseAddress } from 'starknet';
 import { useSnapshot } from 'valtio';
 import { useMultisigContract } from "~/hooks/multisigContractHook";
 import { state } from '~/state';
@@ -70,18 +70,22 @@ const ContractInfo = styled("div", {
 })
 
 export const ExistingMultisig = ({ contractAddress }: MultisigProps) => {
+  const validatedAddress = useMemo(
+    () => validateAndParseAddress(getChecksumAddress(contractAddress)),
+    [contractAddress]
+  );
   const { contract: multisigContract, status, loading } = useMultisigContract(
-    contractAddress, 20000
+    validatedAddress, 20000
   );
   const { walletInfo } = useSnapshot(state);
   
   const [firstLoad, setFirstLoad] = useState<boolean>(true)
   const [pendingStatus, setPendingStatus] = useState<boolean>(false)
 
-  const multisig = findMultisig(contractAddress)
+  const multisig = findMultisig(validatedAddress)
   const transactionFound = multisig?.transactionHash
   
-  const contractLink = getVoyagerContractLink(contractAddress);
+  const contractLink = getVoyagerContractLink(validatedAddress);
   const deployTransaction = findTransaction(transactionFound);
 
   useEffect(() => {
@@ -103,7 +107,7 @@ export const ExistingMultisig = ({ contractAddress }: MultisigProps) => {
       {!pendingStatus && (<>
         <ContractInfo css={{marginTop: "0", marginBottom: "$4"}}><Link href="/" passHref><FiArrowLeft style={{cursor: "pointer"}} size={"27px"}/></Link><Legend as="h2">Multisig Contract</Legend></ContractInfo>
 
-        <ContractInfo><Note css={{stroke: "$text"}}/><Link href={contractLink}>{contractAddress}</Link></ContractInfo>
+        <ContractInfo><Note css={{stroke: "$text"}}/><Link href={contractLink}>{validatedAddress}</Link></ContractInfo>
 
         <ContractInfo><PencilLine css={{stroke: "$text"}}/>{loading ? <SkeletonLoader /> : "Required signers: " + multisig?.threshold + "/" + multisig?.signers?.length}</ContractInfo>
 
