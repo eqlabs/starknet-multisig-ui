@@ -17,3 +17,7 @@ export const voyagerBaseUrl =
 export const classHash =
   process.env.NEXT_PUBLIC_CONTRACT_CLASS_HASH ||
   "0x6a160823ef631db9116704efa7b081c8574177228bb120b098f9646e5f7403c";
+
+export const universalDeployerAddress =
+  process.env.NEXT_PUBLIC_UDC_ADDRESS ||
+  "0x041a78e741e5af2fec34b695679bc6891742439f7afb8484ecd7766661ad02bf";

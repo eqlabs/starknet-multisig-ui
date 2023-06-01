@@ -1,30 +1,34 @@
-import { useEffect, useState } from "react";
-import { Contract, hash, number } from "starknet";
-import Button from "./Button";
-import { Field, Fieldset, Label } from "./Forms";
-import { Input } from "./Input";
+import { useEffect, useState } from "react"
+import { Contract, hash, number } from "starknet"
+import Button from "./Button"
+import { Field, Fieldset, Label } from "./Forms"
+import { Input } from "./Input"
 
-const ArbitraryTransaction = ({multisigContract}: {multisigContract?: Contract}) => {
-  const [targetAddress, setTargetAddress] = useState<string>("");
-  const [targetFunctionName, setTargetFunctionName] = useState<string>("");
-  const [targetFunctionSelector, setTargetFunctionSelector] =
-    useState<string>("");
-  const [targetParameters, setTargetParameters] = useState<string>("");
+const ArbitraryTransaction = ({ multisigContract }: { multisigContract?: Contract }) => {
+  const [targetAddress, setTargetAddress] = useState<string>("")
+  const [targetFunctionName, setTargetFunctionName] = useState<string>("")
+  const [targetFunctionSelector, setTargetFunctionSelector] = useState<string>("")
+  const [targetParameters, setTargetParameters] = useState<string>("")
 
   useEffect(() => {
     if (targetFunctionName) {
-      const newSelector = number.toBN(hash.getSelectorFromName(targetFunctionName));
-      setTargetFunctionSelector(newSelector);
+      const newSelector = number.toBN(hash.getSelectorFromName(targetFunctionName))
+      setTargetFunctionSelector(newSelector)
     }
-  }, [targetFunctionName]);
+  }, [targetFunctionName])
 
   const submit = async () => {
     if (multisigContract) {
-      const bigNumberizedParameters = targetParameters.split(" ").map((p) => number.toBN(p));
-      const { res: nonce } = await multisigContract.get_transactions_len();
-      await multisigContract.submit_transaction(targetAddress, targetFunctionSelector, bigNumberizedParameters,  nonce);
+      const bigNumberizedParameters = targetParameters.split(" ").map((p) => number.toBN(p))
+      const { res: nonce } = await multisigContract.get_transactions_len()
+      await multisigContract.submit_transaction(
+        targetAddress,
+        targetFunctionSelector,
+        bigNumberizedParameters,
+        nonce
+      )
     }
-  };
+  }
 
   return (
     <Fieldset>
@@ -55,7 +59,9 @@ const ArbitraryTransaction = ({multisigContract}: {multisigContract?: Contract})
         ></Input>
       </Field>
 
-      <Button fullWidth onClick={submit}>Submit a new transaction</Button>
+      <Button fullWidth onClick={submit}>
+        Submit a new transaction
+      </Button>
     </Fieldset>
   )
 }

@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { keyframes, styled } from "../../stitches.config";
+import { useEffect, useState } from "react"
+import { keyframes, styled } from "../../stitches.config"
 
 const gradientAnimation = keyframes({
   "0%": {
@@ -32,7 +32,8 @@ const SkeletonLoader = styled("div", {
   minHeight: "$4",
   my: "$1",
   opacity: 0,
-  background: "linear-gradient(90deg, rgba(255,255,255,0.25), rgba(0,0,0,0.1), rgba(255,255,255,0.25))",
+  background:
+    "linear-gradient(90deg, rgba(255,255,255,0.25), rgba(0,0,0,0.1), rgba(255,255,255,0.25))",
   backgroundSize: "400% 400%",
   animationName: `${gradientAnimation}, ${fadeInAnimation}`,
   animationDuration: "12s, 1s",
@@ -42,17 +43,17 @@ const SkeletonLoader = styled("div", {
 })
 
 export const LoaderWithDelay = () => {
-  const delay = 200;
-  const [show, setVisibility] = useState(false);
+  const delay = 200
+  const [show, setVisibility] = useState(false)
 
   useEffect(() => {
-    const timer = setTimeout(() => setVisibility(true), delay);
+    const timer = setTimeout(() => setVisibility(true), delay)
     return () => {
-      clearTimeout(timer);
-    };
-  });
+      clearTimeout(timer)
+    }
+  })
 
-  return show ? <SkeletonLoader /> : null;
-};
+  return show ? <SkeletonLoader /> : null
+}
 
 export default SkeletonLoader

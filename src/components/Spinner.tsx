@@ -1,9 +1,9 @@
-import { keyframes, styled } from "../../stitches.config";
+import { keyframes, styled } from "../../stitches.config"
 
 const rotate = keyframes({
   "0%": { transform: "rotate(0deg)" },
-  "100%": { transform: "rotate(-360deg)" },
-});
+  "100%": { transform: "rotate(-360deg)" }
+})
 
 const Spinner = styled("div", {
   animation: `${rotate} 150ms linear infinite`,
@@ -13,7 +13,7 @@ const Spinner = styled("div", {
   border: "5px solid transparent",
   background: "linear-gradient(white, white), conic-gradient(from 0.15turn, white, #00EBD3)",
   backgroundOrigin: "border-box",
-  backgroundClip: "content-box, border-box",
-});
+  backgroundClip: "content-box, border-box"
+})
 
-export default Spinner;
+export default Spinner

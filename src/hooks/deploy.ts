@@ -1,19 +1,16 @@
-import { useAccount, useStarknet } from "@starknet-react/core";
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import {
   Abi,
   CompiledContract,
   Contract,
-  ContractFactory,
-  getChecksumAddress,
-  number,
   RawCalldata,
-  validateAndParseAddress,
+  number,
+  stark,
 } from "starknet";
+import { useSnapshot } from "valtio";
 import { state } from "~/state";
-import { updateTransactionStatus } from "~/state/utils";
-import { TransactionStatus } from "~/types";
-import { classHash } from "~/utils/config";
+import { classHash, universalDeployerAddress } from "~/utils/config";
+import universalDeployerAbi from "../../public/UniversalDeployer.json";
 
 interface UseContractDeployerArgs {
   compiledContract?: CompiledContract;
@@ -29,59 +26,43 @@ interface UseContractDeployer {
   deploy: ({
     constructorCalldata,
     addressSalt,
-  }: DeployArgs) => Promise<Contract | undefined>;
-  contract?: Contract;
+  }: DeployArgs) => Promise<string | undefined>;
+  transaction?: string;
 }
 
 export function useContractDeployer({
   compiledContract,
 }: UseContractDeployerArgs): UseContractDeployer {
-  const { account } = useAccount();
-  const { library } = useStarknet();
-  const [contract, setContract] = useState<Contract | undefined>();
+  const { accountInterface } = useSnapshot(state);
 
   const deploy = useCallback(
     async ({ constructorCalldata }: DeployArgs) => {
       try {
-        if (compiledContract && account) {
-          const factory = new ContractFactory(
-            compiledContract,
-            classHash,
-            account
-          );
-          const deployReceipt = await factory.deploy(constructorCalldata);
-          const deployedAddress = getChecksumAddress(
-            validateAndParseAddress(deployReceipt.address)
+        if (compiledContract && accountInterface) {
+          const universalDeployer = new Contract(
+            universalDeployerAbi,
+            universalDeployerAddress,
+            accountInterface
           );
 
-          // Add the deployed multisig to state
-          state.multisigs.push({
-            address: deployedAddress,
-            transactionHash: deployReceipt.transaction_hash,
-            transactions: [],
-          });
+          const salt = stark.randomAddress();
 
-          updateTransactionStatus(
-            deployReceipt.transaction_hash,
-            TransactionStatus.NOT_RECEIVED
+          const transaction = await universalDeployer.deployContract(
+            classHash, // Class hash
+            salt, // Salt
+            1, // Unique address true/false
+            constructorCalldata // Calldata
           );
 
-          const contract = new Contract(
-            compiledContract.abi,
-            deployedAddress,
-            library
-          );
-
-          setContract(contract);
-          return contract;
+          return transaction.transaction_hash;
         }
       } catch (_e) {
         console.error(_e);
       }
       return undefined;
     },
-    [account, compiledContract, library]
+    [accountInterface, compiledContract]
   );
 
-  return { contract, deploy };
+  return { deploy };
 }

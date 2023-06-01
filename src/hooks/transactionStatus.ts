@@ -1,5 +1,5 @@
-import { useStarknet } from "@starknet-react/core";
 import { useEffect, useState } from "react";
+import { InvokeTransactionReceiptResponse } from "starknet";
 import { useSnapshot } from "valtio";
 import { state } from "~/state";
 import { updateTransactionStatus } from "~/state/utils";
@@ -9,14 +9,18 @@ import { compareStatuses } from "~/utils";
 export const useTransaction = (
   transactionHash?: string,
   polling?: number
-): { transaction: TransactionInfo | null; loading: boolean } => {
-  const { library: provider } = useStarknet();
-
+): {
+  transaction: TransactionInfo | null;
+  receipt: InvokeTransactionReceiptResponse | null;
+  loading: boolean;
+} => {
   const pollingInterval = polling || 2000;
 
   const [loading, setLoading] = useState<boolean>(true);
+  const [receipt, setReceipt] =
+    useState<InvokeTransactionReceiptResponse | null>(null);
 
-  const { transactions } = useSnapshot(state);
+  const { transactions, accountInterface } = useSnapshot(state);
 
   useEffect(() => {
     let heartbeat: NodeJS.Timer | false;
@@ -25,8 +29,12 @@ export const useTransaction = (
       if (transactionHash && transactionHash !== "") {
         let tx_status;
 
-        const response = await provider.getTransactionReceipt(transactionHash);
-        tx_status = response.status as TransactionStatus;
+        const response = await accountInterface?.getTransactionReceipt?.(
+          transactionHash
+        );
+        response && setReceipt(response);
+
+        tx_status = response?.status as TransactionStatus;
         if (compareStatuses(tx_status, TransactionStatus.ACCEPTED_ON_L1) >= 0) {
           heartbeat && clearInterval(heartbeat);
         }
@@ -44,10 +52,11 @@ export const useTransaction = (
     return () => {
       heartbeat && clearInterval(heartbeat);
     };
-  }, [transactionHash, polling, provider, pollingInterval]);
+  }, [transactionHash, polling, pollingInterval, accountInterface]);
 
   return {
     transaction: transactions.find((tx) => tx.hash === transactionHash) || null,
+    receipt,
     loading,
   };
 };

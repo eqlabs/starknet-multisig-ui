@@ -1,34 +1,33 @@
-import { AnimatePresence } from "framer-motion";
-import type { GetServerSideProps, NextPage } from "next";
-import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
-import { getChecksumAddress, validateAndParseAddress } from "starknet";
-import BorderedContainer from "~/components/BorderedContainer";
-import Box from "~/components/Box";
-import { ExistingMultisig } from "~/components/ExistingMultisig";
-import Header from "~/components/Header";
-import { state } from "~/state";
-import { findMultisig } from "~/state/utils";
-import { SSRProps } from "~/types";
+import { AnimatePresence } from "framer-motion"
+import type { GetServerSideProps, NextPage } from "next"
+import { useRouter } from "next/router"
+import { useEffect, useState } from "react"
+import { getChecksumAddress, validateAndParseAddress } from "starknet"
+import BorderedContainer from "~/components/BorderedContainer"
+import Box from "~/components/Box"
+import { ExistingMultisig } from "~/components/ExistingMultisig"
+import Header from "~/components/Header"
+import { state } from "~/state"
+import { findMultisig } from "~/state/utils"
+import { SSRProps } from "~/types"
 
 const Contract: NextPage<SSRProps> = ({ contractAddress }) => {
-  const router = useRouter();
-  const [validatedAddress, setValidatedAddress] = useState<string>();
-  
+  const router = useRouter()
+  const [validatedAddress, setValidatedAddress] = useState<string>()
+
   useEffect(() => {
     try {
-      const address = getChecksumAddress(validateAndParseAddress(contractAddress));
+      const address = getChecksumAddress(validateAndParseAddress(contractAddress))
       if (address) {
-        setValidatedAddress(address);
+        setValidatedAddress(address)
         if (!findMultisig(address)) {
-          state.multisigs.push({ address: address, transactions: [] });
+          state.multisigs.push({ address: address, transactions: [] })
         }
       } else {
-        router.push("/");
+        router.push("/")
       }
     } catch (e) {
-      console.error("Not a valid address, redirecting back to homepage");
-      router.push("/");
+      router.push("/")
     }
   }, [contractAddress, router])
 
@@ -38,7 +37,7 @@ const Contract: NextPage<SSRProps> = ({ contractAddress }) => {
         display: "flex",
         flexDirection: "column",
         minHeight: "100vh",
-        padding: "0 $6",
+        padding: "0 $6"
       }}
     >
       <Header />
@@ -49,7 +48,7 @@ const Contract: NextPage<SSRProps> = ({ contractAddress }) => {
           alignItems: "center",
           justifyContent: "center",
           flex: "1",
-          position: "relative",
+          position: "relative"
         }}
       >
         <AnimatePresence exitBeforeEnter>
@@ -60,7 +59,7 @@ const Contract: NextPage<SSRProps> = ({ contractAddress }) => {
             exit={{ opacity: 0, y: -16 }}
             transition={{
               y: { type: "spring", stiffness: 300, damping: 30 },
-              opacity: { duration: 0.2 },
+              opacity: { duration: 0.2 }
             }}
           >
             {validatedAddress && <ExistingMultisig contractAddress={validatedAddress} />}
@@ -68,12 +67,10 @@ const Contract: NextPage<SSRProps> = ({ contractAddress }) => {
         </AnimatePresence>
       </Box>
     </Box>
-  );
+  )
 }
 
-export const getServerSideProps: GetServerSideProps = async ({
-  params,
-}) => {
+export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   const contractAddress = params?.address
   return {
     props: {
@@ -82,4 +79,4 @@ export const getServerSideProps: GetServerSideProps = async ({
   }
 }
 
-export default Contract;
+export default Contract

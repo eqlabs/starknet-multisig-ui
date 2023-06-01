@@ -1,4 +1,3 @@
-import { useStarknet } from "@starknet-react/core";
 import throttle from "lodash/throttle";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -9,9 +8,10 @@ import {
   number,
   validateAndParseAddress,
 } from "starknet";
+import { useSnapshot } from "valtio";
 import { state } from "~/state";
 import { addMultisigTransaction, updateMultisigInfo } from "~/state/utils";
-import { pendingStatuses, TransactionStatus } from "~/types";
+import { TransactionStatus, pendingStatuses } from "~/types";
 import { getMultisigTransactionInfo } from "~/utils";
 import Source from "../../public/Multisig.json";
 import { useTransaction } from "./transactionStatus";
@@ -26,11 +26,11 @@ export const useMultisigContract = (
 } => {
   const pollingInterval = polling || 20000;
 
-  const { library: provider } = useStarknet();
-
   const [loading, setLoading] = useState<boolean>(false);
   const [transactionCount, setTransactionCount] = useState<number>(0);
   const [contract, setContract] = useState<Contract | undefined>();
+
+  const { accountInterface } = useSnapshot(state);
 
   const validatedAddress = useMemo(
     () => validateAndParseAddress(getChecksumAddress(address)),
@@ -49,19 +49,19 @@ export const useMultisigContract = (
 
   // Fetch and set the multisig contract to state
   useEffect(() => {
-    if (validatedAddress) {
+    if (validatedAddress && accountInterface) {
       try {
         const multisigContract = new Contract(
           Source.abi as Abi,
           validatedAddress,
-          provider
+          accountInterface
         );
         setContract(multisigContract);
       } catch (_e) {
-        console.error(_e);
+        console.warn(_e);
       }
     }
-  }, [provider, validatedAddress]);
+  }, [validatedAddress, accountInterface]);
 
   // Poll for transactionCount
   useEffect(() => {
@@ -71,23 +71,20 @@ export const useMultisigContract = (
 
     const getTransactionCount = async () => {
       try {
-        // Poll only if the contract itself is deployed
-        if (
-          transaction?.status &&
-          !pendingStatuses.includes(transaction?.status as TransactionStatus)
-        ) {
-          const { res } = (await contract?.get_transactions_len()) || {
-            transactions_len: number.toBN(0),
-          };
+        const { res } = (await contract?.get_transactions_len()) || {
+          transactions_len: number.toBN(0),
+        };
 
-          // Only update the state if there has been a change
-          if (res && res.toNumber() !== previous) {
-            setTransactionCount(res.toNumber());
-            previous = res.toNumber();
-          }
+        // Only update the state if there has been a change
+        if (res && res.toNumber() !== previous) {
+          setTransactionCount(res.toNumber());
+          previous = res.toNumber();
         }
       } catch (e) {
-        console.error(e);
+        console.warn(
+          "Transaction count could not be fetched (probably due to an unitialized wallet): ",
+          e
+        );
       }
     };
 
@@ -101,9 +98,7 @@ export const useMultisigContract = (
 
   const fetchInfo = useMemo(
     () =>
-      contract &&
-      transaction?.status &&
-      !pendingStatuses.includes(transaction?.status as TransactionStatus)
+      contract
         ? throttle(async () => {
             !cachedMultisig && setLoading(true);
             try {
@@ -140,7 +135,7 @@ export const useMultisigContract = (
             setLoading(false);
           }, 5000)
         : () => {},
-    [cachedMultisig, contract, transaction?.status, validatedAddress]
+    [cachedMultisig, contract, validatedAddress]
   );
 
   // Fetcher for transactionCount

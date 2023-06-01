@@ -1,34 +1,32 @@
-import { AnimatePresence } from "framer-motion";
-import type { NextPage } from "next";
-import { useRouter } from "next/router";
-import { useSnapshot } from "valtio";
-import BorderedContainer from "~/components/BorderedContainer";
-import Box from "~/components/Box";
-import { ConnectWallet } from "~/components/ConnectWallet";
-import { Legend } from "~/components/Forms";
-import Header from "~/components/Header";
-import { AdvanceButton } from "~/components/Input";
-import MultisigAddressInput from "~/components/MultisigAddressInput";
-import MultisigList from "~/components/MultisigList";
-import { state } from "~/state";
+import { AnimatePresence } from "framer-motion"
+import type { NextPage } from "next"
+import { useRouter } from "next/router"
+import { useSnapshot } from "valtio"
+import BorderedContainer from "~/components/BorderedContainer"
+import Box from "~/components/Box"
+import { ConnectWallet } from "~/components/ConnectWallet"
+import { Legend } from "~/components/Forms"
+import Header from "~/components/Header"
+import { AdvanceButton } from "~/components/Input"
+import MultisigAddressInput from "~/components/MultisigAddressInput"
+import MultisigList from "~/components/MultisigList"
+import { state } from "~/state"
 
 const Multisigs = () => {
-  const { multisigs } = useSnapshot(state);
-  return <>{multisigs?.length > 0 && (
-    <MultisigList />
-  )}</>
+  const { multisigs } = useSnapshot(state)
+  return <>{multisigs?.length > 0 && <MultisigList />}</>
 }
 
 const Home: NextPage = () => {
-  const router = useRouter();
-  const { walletInfo } = useSnapshot(state);
+  const router = useRouter()
+  const { walletInfo } = useSnapshot(state)
   return (
     <Box
       css={{
         display: "flex",
         flexDirection: "column",
         minHeight: "100vh",
-        padding: "0 $6",
+        padding: "0 $6"
       }}
     >
       <Header />
@@ -39,11 +37,11 @@ const Home: NextPage = () => {
           alignItems: "center",
           justifyContent: "center",
           flex: "1",
-          position: "relative",
+          position: "relative"
         }}
       >
         <AnimatePresence exitBeforeEnter>
-          {walletInfo && walletInfo.address ? 
+          {walletInfo && walletInfo.address ? (
             <>
               <BorderedContainer
                 key="new-multisig-button"
@@ -52,12 +50,17 @@ const Home: NextPage = () => {
                 exit={{ opacity: 0, y: -16 }}
                 transition={{
                   y: { type: "spring", stiffness: 300, damping: 30 },
-                  opacity: { duration: 0.2 },
+                  opacity: { duration: 0.2 }
                 }}
-                style={{ display: "flex", marginBottom: "1rem", flexDirection: "row", justifyContent: "space-between" }}
+                style={{
+                  display: "flex",
+                  marginBottom: "1rem",
+                  flexDirection: "row",
+                  justifyContent: "space-between"
+                }}
               >
                 <Legend as="h2">Create a new multisig</Legend>
-                <AdvanceButton onClick={() => router.push("/create")}/>
+                <AdvanceButton onClick={() => router.push("/create")} />
               </BorderedContainer>
               <BorderedContainer
                 key="existing-multisigs-form"
@@ -66,7 +69,7 @@ const Home: NextPage = () => {
                 exit={{ opacity: 0, y: -16 }}
                 transition={{
                   y: { type: "spring", stiffness: 300, damping: 30 },
-                  opacity: { duration: 0.2 },
+                  opacity: { duration: 0.2 }
                 }}
               >
                 <Legend as="h2">Use an existing multisig</Legend>
@@ -75,11 +78,13 @@ const Home: NextPage = () => {
                 <Multisigs />
               </BorderedContainer>
             </>
-          : <ConnectWallet />}
+          ) : (
+            <ConnectWallet />
+          )}
         </AnimatePresence>
       </Box>
     </Box>
-  );
+  )
 }
 
-export default Home;
+export default Home
