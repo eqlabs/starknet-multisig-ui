@@ -1,12 +1,12 @@
-import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { styled } from '@stitches/react';
-import { useRouter } from "next/router";
-import { useCallback } from "react";
-import { useSnapshot } from 'valtio';
-import { state } from "~/state";
-import { mapWalletIdToIcon, truncateAddress } from '~/utils';
-import Button from "./Button";
-import { Caret } from './Icons';
+import * as DropdownMenu from "@radix-ui/react-dropdown-menu"
+import { styled } from "@stitches/react"
+import { useRouter } from "next/router"
+import { useCallback } from "react"
+import { useSnapshot } from "valtio"
+import { state } from "~/state"
+import { mapWalletIdToIcon, truncateAddress } from "~/utils"
+import Button from "./Button"
+import { Caret } from "./Icons"
 
 const Trigger = styled(DropdownMenu.Trigger, {
   display: "flex",
@@ -21,11 +21,11 @@ const Trigger = styled(DropdownMenu.Trigger, {
   cursor: "pointer",
   gap: "$2",
   ".caret": {
-    transition: "transform 0.1s ease",
+    transition: "transform 0.1s ease"
   },
-  '&[data-state="open"]': {
+  "&[data-state=open]": {
     ".caret": {
-      transform: "scaleY(-1)",
+      transform: "scaleY(-1)"
     }
   }
 })
@@ -42,41 +42,40 @@ const Content = styled(DropdownMenu.Content, {
 })
 
 const WalletDropdown = () => {
-  const router = useRouter();
-  const { transactions, walletInfo } = useSnapshot(state);
-  
+  const router = useRouter()
+  const { walletInfo } = useSnapshot(state)
+
   const disconnectCallback = useCallback(() => {
-    state.walletInfo = false;
-    router.push("/");
-  }, [router]);
+    state.walletInfo = false
+    router.push("/")
+  }, [router])
 
-  return (
-    walletInfo && walletInfo.address ? (
-      <DropdownMenu.Root>
-        {/* TODO: Map the used wallet type to a corresponding wallet icon */}
-        <Trigger>
-          <div>{mapWalletIdToIcon(walletInfo && walletInfo.id ? walletInfo.id : "0")}</div>
-          <span>{truncateAddress(walletInfo.address, 12)}</span>
-          <Caret className="caret" css={{stroke: "#FFFFFF", strokeWidth: "2px" }} height="17"/>
-        </Trigger>
+  return walletInfo && walletInfo.address ? (
+    <DropdownMenu.Root>
+      {/* TODO: Map the used wallet type to a corresponding wallet icon */}
+      <Trigger>
+        <div>{mapWalletIdToIcon(walletInfo && walletInfo.id ? walletInfo.id : "0")}</div>
+        <span>{truncateAddress(walletInfo.address, 12)}</span>
+        <Caret className="caret" css={{ stroke: "#FFFFFF", strokeWidth: "2px" }} height="17" />
+      </Trigger>
 
-        <DropdownMenu.Portal>
-          <Content>
-            <DropdownMenu.Item>
-              <Button size="sm" variant="link" onClick={disconnectCallback}>
-                Disconnect
-              </Button>
-            </DropdownMenu.Item>
-            {/* TODO: List past and current transactions to the user */}
-            {/* <DropdownMenu.Separator />
+      <DropdownMenu.Portal>
+        <Content>
+          <DropdownMenu.Item>
+            <Button size="sm" variant="link" onClick={disconnectCallback}>
+              Disconnect
+            </Button>
+          </DropdownMenu.Item>
+          {/* TODO: List past and current transactions to the user */}
+          {/* <DropdownMenu.Separator />
             <DropdownMenu.Item>{transactions.slice(transactions.length - 10, transactions.length - 1).map(tx => (
               <div key={tx.hash}>{truncateAddress(tx.hash) + " - " + tx.status}</div>
             ))}</DropdownMenu.Item> */}
-          </Content>
-        </DropdownMenu.Portal>
-        
-      </DropdownMenu.Root>
-    ) : <></>
+        </Content>
+      </DropdownMenu.Portal>
+    </DropdownMenu.Root>
+  ) : (
+    <></>
   )
 }
-export default WalletDropdown;
+export default WalletDropdown

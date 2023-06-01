@@ -1,13 +1,13 @@
-import React from "react";
-import Box from "~/components/Box";
-import Spinner from "~/components/Spinner";
-import { keyframes, styled } from "../../stitches.config";
+import React from "react"
+import Box from "~/components/Box"
+import Spinner from "~/components/Spinner"
+import { keyframes, styled } from "../../stitches.config"
 
 const shine = keyframes({
   "0%": { transform: "translateX(-30px) scale(0.7)", opacity: 0 },
   "50%": { transform: "translateX(0) scale(1)", opacity: 1 },
-  "100%": { transform: "translateX(30px) scale(0.7)", opacity: 0 },
-});
+  "100%": { transform: "translateX(30px) scale(0.7)", opacity: 0 }
+})
 
 export const StyledButton = styled("button", {
   all: "unset",
@@ -33,7 +33,7 @@ export const StyledButton = styled("button", {
     background: "radial-gradient(rgba(255,255,255,.8), rgba(255,255,255,0))",
     width: "20px",
     height: "20px",
-    transformOrigin: "center center",
+    transformOrigin: "center center"
   },
   "&::after": {
     boxSizing: "border-box",
@@ -48,7 +48,7 @@ export const StyledButton = styled("button", {
     background: "radial-gradient(rgba(255,255,255,.8), rgba(255,255,255,0))",
     width: "40px",
     height: "40px",
-    transformOrigin: "center center",
+    transformOrigin: "center center"
   },
   display: "inline-flex",
   flexShrink: 0,
@@ -67,36 +67,36 @@ export const StyledButton = styled("button", {
   "&:disabled": {
     opacity: 0.6,
     pointerEvents: "none",
-    cursor: "not-allowed",
+    cursor: "not-allowed"
   },
   variants: {
     size: {
       xs: {
         height: "$5",
         px: "$2",
-        fontSize: "$xs",
+        fontSize: "$xs"
       },
       sm: {
         height: "$7",
         px: "$3",
-        fontSize: "$xs",
+        fontSize: "$xs"
       },
       md: {
         height: "$12",
         px: "$6",
-        fontSize: "$lg",
+        fontSize: "$lg"
       },
       lg: {
         height: "$16",
         px: "$8",
-        fontSize: "$xl",
-      },
+        fontSize: "$xl"
+      }
     },
     variant: {
       link: {
         textDecoration: "underline",
         fontSize: "inherit",
-        textUnderlineOffset: "2px",
+        textUnderlineOffset: "2px"
       },
       default: {
         background: "$buttonBg",
@@ -106,50 +106,50 @@ export const StyledButton = styled("button", {
             background: "$buttonHover",
             "&::before": {
               animation: `${shine} 1260ms linear`,
-              animationDelay: "130ms",
+              animationDelay: "130ms"
             },
             "&::after": {
-              animation: `${shine} 1200ms linear`,
-            },
-          },
+              animation: `${shine} 1200ms linear`
+            }
+          }
         },
         "&:active": {
-          background: "$buttonBgActive",
+          background: "$buttonBgActive"
         },
         "&:focus": {
-          boxShadow: "inset 0 0 0 1px $colors$focusOutline, inset 0 0 0 2px $colors$focusOutline",
-        },
-      },
+          boxShadow: "inset 0 0 0 1px $colors$focusOutline, inset 0 0 0 2px $colors$focusOutline"
+        }
+      }
     },
     muted: {
       true: {
-        color: "$textMuted",
-      },
+        color: "$textMuted"
+      }
     },
     outline: {
       true: {
         backgroundColor: "transparent",
-        border: "2px solid $buttonOutlineColor",
-      },
+        border: "2px solid $buttonOutlineColor"
+      }
     },
     uppercase: {
       true: {
-        textTransform: "uppercase",
-      },
+        textTransform: "uppercase"
+      }
     },
     fullWidth: {
       true: {
-        width: "100%",
-      },
+        width: "100%"
+      }
     },
     isLoading: {
       true: {
         "& .button-content": {
-          visibility: "hidden",
+          visibility: "hidden"
         },
-        pointerEvents: "none",
-      },
-    },
+        pointerEvents: "none"
+      }
+    }
   },
   compoundVariants: [
     {
@@ -161,33 +161,39 @@ export const StyledButton = styled("button", {
         boxShadow: "inset 0 0 0 1px $colors$mauve10",
         "&:hover": {
           color: "$mauve12",
-          background: "$mauve5",
-        },
-      },
-    },
+          background: "$mauve5"
+        }
+      }
+    }
   ],
   defaultVariants: {
     size: "md",
-    variant: "default",
-  },
-});
+    variant: "default"
+  }
+})
 
-const CustomButton: React.FC<
-  React.ComponentProps<typeof StyledButton> & { as?: string }
-> = React.forwardRef(({ children, as = "button", ...rest }, ref) => (
-  // @ts-expect-error
-  <StyledButton {...rest} ref={ref} as={as}>
+interface CustomButtonProps extends React.ComponentPropsWithRef<typeof StyledButton> {
+  as?: string
+}
+
+const CustomButton: React.FC<CustomButtonProps> = React.forwardRef(({ children, ...rest }, ref) => (
+  <StyledButton {...rest} ref={ref}>
     <Box
       as="span"
-      css={{ display: "flex", flexDirection: "row", gap: "$2", alignItems: "center" }}
+      css={{
+        display: "flex",
+        flexDirection: "row",
+        gap: "$2",
+        alignItems: "center"
+      }}
       className="button-content"
     >
       {children}
     </Box>
     {rest.isLoading && <Spinner css={{ position: "absolute" }} />}
   </StyledButton>
-));
+))
 
-CustomButton.displayName = "CustomButton";
+CustomButton.displayName = "CustomButton"
 
-export default CustomButton;
+export default CustomButton

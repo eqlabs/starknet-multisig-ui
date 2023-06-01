@@ -1,5 +1,5 @@
-import { motion } from "framer-motion";
-import { styled } from "../../stitches.config";
+import { motion } from "framer-motion"
+import { styled } from "../../stitches.config"
 
 const Container = styled(motion.div, {
   boxSizing: "border-box",
@@ -10,6 +10,6 @@ const Container = styled(motion.div, {
   py: "$7",
   px: "$8",
   background: "$background"
-});
+})
 
 export default Container

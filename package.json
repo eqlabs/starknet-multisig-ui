@@ -1,6 +1,6 @@
 {
-  "name": "starknet-react-next",
-  "private": true,
+  "name": "starsign",
+  "private": false,
   "version": "0.0.2",
   "scripts": {
     "dev": "next dev",

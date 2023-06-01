@@ -1,24 +1,23 @@
-import { useRouter } from "next/router";
-import { useCallback, useState } from "react";
-import { getChecksumAddress } from "starknet";
-import { Field, Fieldset, Label } from "./Forms";
-import { EmbeddedSubmitInput } from "./Input";
+import { useRouter } from "next/router"
+import { useCallback, useState } from "react"
+import { getChecksumAddress } from "starknet"
+import { Field, Fieldset, Label } from "./Forms"
+import { EmbeddedSubmitInput } from "./Input"
 
 const MultisigAddressInput = () => {
-  const router = useRouter();
-  const [address, setAddress] = useState<string>("");
-  
+  const router = useRouter()
+  const [address, setAddress] = useState<string>("")
+
   const validateAddress = useCallback(() => {
     try {
-      if (address.substring(0,2) !== "0x") {
-        return false;
+      if (address.substring(0, 2) !== "0x") {
+        return false
       }
-      const checksumAddress = getChecksumAddress(address);
-      return address.length === checksumAddress.length;
+      const checksumAddress = getChecksumAddress(address)
+      return address.length === checksumAddress.length
     } catch (e) {
-      console.debug(e);
+      return false
     }
-    return false;
   }, [address])
 
   return (
