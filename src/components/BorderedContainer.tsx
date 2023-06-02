@@ -1,13 +1,15 @@
-import { motion } from "framer-motion";
-import { styled } from "../../stitches.config";
+import { motion } from "framer-motion"
+import { styled } from "../../stitches.config"
 
-const BorderedContainer = styled(motion.div, {
+const Container = styled(motion.div, {
   boxSizing: "border-box",
   width: "100%",
-  maxWidth: "520px",
+  maxWidth: "778px",
   margin: "0 auto",
-  border: "3px solid $indigo12",
-  padding: "$8",
-});
+  borderRadius: "45px",
+  py: "$7",
+  px: "$8",
+  background: "$background"
+})
 
-export default BorderedContainer
+export default Container

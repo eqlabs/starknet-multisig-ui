@@ -1,15 +1,20 @@
-import { useStarknet } from "@starknet-react/core";
+import throttle from "lodash/throttle";
 import { useEffect, useMemo, useState } from "react";
-import { Abi, Contract, validateAndParseAddress } from "starknet";
-import { sanitizeHex } from "starknet/dist/utils/encode";
-import { toBN, toHex } from "starknet/dist/utils/number";
+import {
+  Abi,
+  Contract,
+  encode,
+  getChecksumAddress,
+  number,
+  validateAndParseAddress,
+} from "starknet";
 import { useSnapshot } from "valtio";
 import { state } from "~/state";
-import { addMultisigTransaction, findMultisig } from "~/state/utils";
-import { pendingStatuses, TransactionStatus } from "~/types";
-import { compareStatuses, getMultisigTransactionInfo } from "~/utils";
+import { addMultisigTransaction, updateMultisigInfo } from "~/state/utils";
+import { TransactionStatus, pendingStatuses } from "~/types";
+import { getMultisigTransactionInfo } from "~/utils";
 import Source from "../../public/Multisig.json";
-import { useTransaction, useTransactionStatus } from "./transactionStatus";
+import { useTransaction } from "./transactionStatus";
 
 export const useMultisigContract = (
   address: string,
@@ -18,56 +23,45 @@ export const useMultisigContract = (
   contract: Contract | undefined;
   status: TransactionStatus;
   loading: boolean;
-  signers: string[];
-  threshold: number;
-  transactionCount: number;
 } => {
   const pollingInterval = polling || 20000;
 
-  const { multisigs } = useSnapshot(state);
-
-  const { library: provider } = useStarknet();
-
-  const [status, send] = useTransactionStatus();
-  const [loading, setLoading] = useState<boolean>(true);
-
-  const [signers, setSigners] = useState<string[]>([]);
-  const [threshold, setThreshold] = useState<number>(0);
+  const [loading, setLoading] = useState<boolean>(false);
   const [transactionCount, setTransactionCount] = useState<number>(0);
   const [contract, setContract] = useState<Contract | undefined>();
 
+  const { accountInterface } = useSnapshot(state);
+
   const validatedAddress = useMemo(
-    () => validateAndParseAddress(address),
+    () => validateAndParseAddress(getChecksumAddress(address)),
     [address]
   );
 
-  // Fetch and set the multisig contract to state
-  useEffect(() => {
-    if (address) {
-      try {
-        const validatedAddress = validateAndParseAddress(address);
-        const multisigContract = new Contract(
-          Source.abi as Abi,
-          validatedAddress,
-          provider
-        );
-        setContract(multisigContract);
-      } catch (_e) {
-        console.error(_e);
-      }
-    }
-  }, [address, provider]);
-
-  // Search for multisig in local cache
-  const cachedMultisig = useMemo(
-    () => findMultisig(validatedAddress),
-    [validatedAddress]
+  // Search for multisig in state / cache
+  const cachedMultisig = state.multisigs.find(
+    (multisig) => multisig.address === validatedAddress
   );
 
   const { transaction } = useTransaction(
     cachedMultisig?.transactionHash,
     pollingInterval
   );
+
+  // Fetch and set the multisig contract to state
+  useEffect(() => {
+    if (validatedAddress && accountInterface) {
+      try {
+        const multisigContract = new Contract(
+          Source.abi as Abi,
+          validatedAddress,
+          accountInterface
+        );
+        setContract(multisigContract);
+      } catch (_e) {
+        console.warn(_e);
+      }
+    }
+  }, [validatedAddress, accountInterface]);
 
   // Poll for transactionCount
   useEffect(() => {
@@ -77,23 +71,20 @@ export const useMultisigContract = (
 
     const getTransactionCount = async () => {
       try {
-        // Poll only if the contract itself is deployed
-        if (
-          status.value &&
-          !pendingStatuses.includes(status.value as TransactionStatus)
-        ) {
-          const { res } = (await contract?.get_transactions_len()) || {
-            transactions_len: toBN(0),
-          };
+        const { res } = (await contract?.get_transactions_len()) || {
+          transactions_len: number.toBN(0),
+        };
 
-          // Only update the state if there has been a change
-          if (res && res.toNumber() !== previous) {
-            setTransactionCount(res.toNumber());
-            previous = res.toNumber();
-          }
+        // Only update the state if there has been a change
+        if (res && res.toNumber() !== previous) {
+          setTransactionCount(res.toNumber());
+          previous = res.toNumber();
         }
       } catch (e) {
-        console.error(e);
+        console.warn(
+          "Transaction count could not be fetched (probably due to an unitialized wallet): ",
+          e
+        );
       }
     };
 
@@ -103,111 +94,103 @@ export const useMultisigContract = (
     return () => {
       heartbeat && clearInterval(heartbeat);
     };
-  }, [contract, polling, pollingInterval, status.value]);
+  }, [contract, polling, pollingInterval, transaction?.status]);
 
-  // Contract deployment status nudger
+  const fetchInfo = useMemo(
+    () =>
+      contract
+        ? throttle(async () => {
+            !cachedMultisig && setLoading(true);
+            try {
+              const { signers: signersResponse } =
+                (await contract?.get_signers()) || {
+                  signers: [],
+                };
+              const signers = signersResponse
+                .map(number.toHex)
+                .map(encode.sanitizeHex)
+                .map(getChecksumAddress)
+                .map(validateAndParseAddress);
+              const { threshold } = (await contract?.get_threshold()) || {
+                threshold: number.toBN(0),
+              };
+
+              if (cachedMultisig) {
+                updateMultisigInfo({
+                  ...cachedMultisig,
+                  signers: signers,
+                  threshold: threshold.toNumber(),
+                });
+              } else {
+                updateMultisigInfo({
+                  address: validatedAddress,
+                  signers: signers,
+                  threshold: threshold.toNumber(),
+                  transactions: [],
+                });
+              }
+            } catch (e) {
+              console.error(e);
+            }
+            setLoading(false);
+          }, 5000)
+        : () => {},
+    [cachedMultisig, contract, validatedAddress]
+  );
+
+  // Fetcher for transactionCount
   useEffect(() => {
-    const getContractStatus = async () => {
-      // If match found, use more advanced state transitions
-      if (!transaction?.status) {
-        try {
-          // If match not found, just see if contract is deployed
-          const { res: transactionCount } =
-            await contract?.get_transactions_len();
-          transactionCount && send("DEPLOYED");
-        } catch (_e) {
-          console.error(_e);
-        }
-      }
-
-      // Nudge the state machine forward or reject
-      if (
-        transaction?.status &&
-        compareStatuses(transaction.status, status.value as TransactionStatus) >
-          0
-      ) {
-        send("ADVANCE");
-      } else if (transaction?.status === TransactionStatus.REJECTED) {
-        send("REJECT");
-      }
-    };
-
-    contract && getContractStatus();
-  }, [contract, send, status.value, transaction?.status]);
-
-  // Basic info fetcher
-  // TODO: Could be deprecated in favor of SSR / incremental static generation
-  useEffect(() => {
-    const fetchInfo = async () => {
-      setLoading(true);
-      try {
-        // If contract is deployed, fetch more info
-        if (
-          status.value &&
-          !pendingStatuses.includes(status.value as TransactionStatus)
-        ) {
-          const { signers: signersResponse } =
-            (await contract?.get_signers()) || {
-              signers: [],
-            };
-          const signers = signersResponse.map(toHex).map(sanitizeHex);
-          const { threshold } = (await contract?.get_threshold()) || {
-            threshold: toBN(0),
-          };
-
-          setSigners(signers.map(validateAndParseAddress));
-          setThreshold(threshold.toNumber());
-        }
-      } catch (e) {
-        console.error(e);
-      }
-      setLoading(false);
-    };
-
     contract !== undefined && fetchInfo();
-
     return () => {
-      setSigners([]);
-      setThreshold(0);
       setTransactionCount(0);
     };
-  }, [contract, multisigs, provider, send, status.value]);
+  }, [contract, fetchInfo]);
+
+  const fetchTransactions = useMemo(
+    () =>
+      validatedAddress && contract && transactionCount > 0
+        ? throttle(
+            async () => {
+              try {
+                let currentTransactionIndex = transactionCount - 1;
+
+                while (currentTransactionIndex >= 0) {
+                  if (
+                    !cachedMultisig?.transactions.find(
+                      (tx) =>
+                        tx.nonce === currentTransactionIndex && tx.executed
+                    )
+                  ) {
+                    const parsedTransaction = await getMultisigTransactionInfo(
+                      contract,
+                      currentTransactionIndex
+                    );
+                    addMultisigTransaction(validatedAddress, parsedTransaction);
+                  }
+                  currentTransactionIndex -= 1;
+                }
+              } catch (error) {
+                console.error(error);
+              }
+            },
+            5000,
+            { trailing: true }
+          )
+        : () => {},
+    [validatedAddress, cachedMultisig?.transactions, contract, transactionCount]
+  );
 
   // Fetch transaction info if transactionCount has changed
   useEffect(() => {
-    const fetchTransactions = async () => {
-      setLoading(true);
-      try {
-        if (contract && transactionCount > 0) {
-          let currentTransactionIndex = transactionCount - 1;
-
-          while (currentTransactionIndex >= 0) {
-            const parsedTransaction = await getMultisigTransactionInfo(
-              contract,
-              currentTransactionIndex
-            );
-            addMultisigTransaction(address, parsedTransaction);
-            currentTransactionIndex -= 1;
-          }
-        }
-      } catch (error) {
-        console.error(error);
-      }
-      setLoading(false);
-    };
-
     // Fetch transactions of this multisig if the contract is deployed
-    status.value &&
-      !pendingStatuses.includes(status.value as TransactionStatus) &&
+    transaction?.status &&
+      !pendingStatuses.includes(transaction?.status as TransactionStatus) &&
       fetchTransactions();
-  }, [address, contract, status.value, transactionCount]);
+  }, [fetchTransactions, transaction?.status]);
 
   return {
     contract,
-    status: status.value as TransactionStatus,
+    status: transaction?.status as TransactionStatus,
     loading,
-    signers,
-    threshold,
-    transactionCount,
   };
 };

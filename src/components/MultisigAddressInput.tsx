@@ -1,23 +1,42 @@
-import { useRouter } from "next/router";
-import { useState } from "react";
-import { StyledButton } from "./Button";
-import { Field, Fieldset, Label } from "./Forms";
-import { Input } from "./Input";
+import { useRouter } from "next/router"
+import { useCallback, useState } from "react"
+import { getChecksumAddress } from "starknet"
+import { Field, Fieldset, Label } from "./Forms"
+import { EmbeddedSubmitInput } from "./Input"
 
 const MultisigAddressInput = () => {
-  const router = useRouter();
-  const [address, setAddress] = useState<string>("");
+  const router = useRouter()
+  const [address, setAddress] = useState<string>("")
+
+  const validateAddress = useCallback(() => {
+    try {
+      if (address.substring(0, 2) !== "0x") {
+        return false
+      }
+      const checksumAddress = getChecksumAddress(address)
+      return address.length === checksumAddress.length
+    } catch (e) {
+      return false
+    }
+  }, [address])
+
   return (
     <Fieldset>
       <Field>
         <Label>Contract address:</Label>
-        <Input
+        <EmbeddedSubmitInput
           type="text"
           value={address}
+          placeholder="Insert a contract address"
           onChange={(e) => setAddress(e.target.value)}
-        ></Input>
+          onClick={() => {
+            if (validateAddress()) {
+              router.push(`multisig/${address}`)
+            }
+          }}
+          disabled={!validateAddress()}
+        ></EmbeddedSubmitInput>
       </Field>
-      <StyledButton fullWidth onClick={() => router.push(`wallet/${address}`)}>Open Multisig</StyledButton>
     </Fieldset>
   )
 }

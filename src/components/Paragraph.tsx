@@ -1,7 +1,7 @@
-import { styled } from "../../stitches.config";
+import { styled } from "../../stitches.config"
 
 const Paragraph = styled("p", {
-  boxSizing: "border-box",
-});
+  boxSizing: "border-box"
+})
 
-export default Paragraph;
+export default Paragraph
