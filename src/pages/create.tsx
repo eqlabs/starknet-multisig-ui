@@ -1,10 +1,9 @@
-import { AnimatePresence } from "framer-motion";
-import type { NextPage } from "next";
-import BorderedContainer from "~/components/BorderedContainer";
-import Box from "~/components/Box";
-import Footer from "~/components/Footer";
-import Header from "~/components/Header";
-import { NewMultisig } from "~/components/NewMultisig";
+import { AnimatePresence } from "framer-motion"
+import type { NextPage } from "next"
+import BorderedContainer from "~/components/BorderedContainer"
+import Box from "~/components/Box"
+import Header from "~/components/Header"
+import { NewMultisig } from "~/components/NewMultisig"
 
 const Create: NextPage = () => (
   <Box
@@ -12,7 +11,7 @@ const Create: NextPage = () => (
       display: "flex",
       flexDirection: "column",
       minHeight: "100vh",
-      padding: "0 $6",
+      padding: "0 $6"
     }}
   >
     <Header />
@@ -23,7 +22,7 @@ const Create: NextPage = () => (
         alignItems: "center",
         justifyContent: "center",
         flex: "1",
-        position: "relative",
+        position: "relative"
       }}
     >
       <AnimatePresence exitBeforeEnter>
@@ -34,15 +33,14 @@ const Create: NextPage = () => (
           exit={{ opacity: 0, y: -16 }}
           transition={{
             y: { type: "spring", stiffness: 300, damping: 30 },
-            opacity: { duration: 0.2 },
+            opacity: { duration: 0.2 }
           }}
         >
           <NewMultisig />
         </BorderedContainer>
       </AnimatePresence>
     </Box>
-    <Footer />
   </Box>
-);
+)
 
-export default Create;
+export default Create

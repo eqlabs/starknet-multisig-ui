@@ -1,48 +1,90 @@
-import { AnimatePresence } from "framer-motion";
-import type { NextPage } from "next";
-import BorderedContainer from "~/components/BorderedContainer";
-import Box from "~/components/Box";
-import { ConnectWallet } from "~/components/ConnectWallet";
-import Footer from "~/components/Footer";
-import Header from "~/components/Header";
+import { AnimatePresence } from "framer-motion"
+import type { NextPage } from "next"
+import { useRouter } from "next/router"
+import { useSnapshot } from "valtio"
+import BorderedContainer from "~/components/BorderedContainer"
+import Box from "~/components/Box"
+import { ConnectWallet } from "~/components/ConnectWallet"
+import { Legend } from "~/components/Forms"
+import Header from "~/components/Header"
+import { AdvanceButton } from "~/components/Input"
+import MultisigAddressInput from "~/components/MultisigAddressInput"
+import MultisigList from "~/components/MultisigList"
+import { state } from "~/state"
 
-const Home: NextPage = () => (
-  <Box
-    css={{
-      display: "flex",
-      flexDirection: "column",
-      minHeight: "100vh",
-      padding: "0 $6",
-    }}
-  >
-    <Header />
+const Multisigs = () => {
+  const { multisigs } = useSnapshot(state)
+  return <>{multisigs?.length > 0 && <MultisigList />}</>
+}
+
+const Home: NextPage = () => {
+  const router = useRouter()
+  const { walletInfo } = useSnapshot(state)
+  return (
     <Box
       css={{
         display: "flex",
         flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        flex: "1",
-        position: "relative",
+        minHeight: "100vh",
+        padding: "0 $6"
       }}
     >
-      <AnimatePresence exitBeforeEnter>
-        <BorderedContainer
-          key="connect-account"
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -16 }}
-          transition={{
-            y: { type: "spring", stiffness: 300, damping: 30 },
-            opacity: { duration: 0.2 },
-          }}
-        >
-          <ConnectWallet />
-        </BorderedContainer>
-      </AnimatePresence>
+      <Header />
+      <Box
+        css={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          flex: "1",
+          position: "relative"
+        }}
+      >
+        <AnimatePresence exitBeforeEnter>
+          {walletInfo && walletInfo.address ? (
+            <>
+              <BorderedContainer
+                key="new-multisig-button"
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -16 }}
+                transition={{
+                  y: { type: "spring", stiffness: 300, damping: 30 },
+                  opacity: { duration: 0.2 }
+                }}
+                style={{
+                  display: "flex",
+                  marginBottom: "1rem",
+                  flexDirection: "row",
+                  justifyContent: "space-between"
+                }}
+              >
+                <Legend as="h2">Create a new multisig</Legend>
+                <AdvanceButton onClick={() => router.push("/create")} />
+              </BorderedContainer>
+              <BorderedContainer
+                key="existing-multisigs-form"
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -16 }}
+                transition={{
+                  y: { type: "spring", stiffness: 300, damping: 30 },
+                  opacity: { duration: 0.2 }
+                }}
+              >
+                <Legend as="h2">Use an existing multisig</Legend>
+                <hr />
+                <MultisigAddressInput />
+                <Multisigs />
+              </BorderedContainer>
+            </>
+          ) : (
+            <ConnectWallet />
+          )}
+        </AnimatePresence>
+      </Box>
     </Box>
-    <Footer />
-  </Box>
-);
+  )
+}
 
-export default Home;
+export default Home
